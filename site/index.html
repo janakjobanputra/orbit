@@ -7,7 +7,7 @@
 <meta name="description" content="Orbit is a free, open-source menu-bar calendar for macOS. See what's next at a glance, join meetings in one click, and keep your day in orbit.">
 <meta property="og:title" content="Orbit — your calendar in the menu bar">
 <meta property="og:description" content="A free, open-source menu-bar calendar for macOS.">
-<meta property="og:image" content="https://try-orbit.app/images/popover-light.png">
+<meta property="og:image" content="https://try-orbit.app/images/day-light.png">
 <meta property="og:url" content="https://try-orbit.app/">
 <link rel="canonical" href="https://try-orbit.app/">
 <link rel="icon" type="image/svg+xml" href="images/logo.svg">
@@ -126,6 +126,8 @@ h2 { font-size: clamp(32px, 4.4vw, 48px); line-height: 1.08; letter-spacing: -0.
 .visual { display: flex; justify-content: center; padding: 32px; border-radius: 24px; background: var(--bg-soft); border: 1px solid var(--line); }
 .visual img { width: 300px; border-radius: 16px; box-shadow: var(--shadow); }
 .visual.crop { height: 460px; overflow: hidden; align-items: flex-start; }
+/* Skip past the month grid to the agenda list below it. */
+.visual.crop.agenda img { margin-top: -218px; }
 
 /* Mock card for the "now" section */
 .nowcard { width: 320px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); font-size: 14px; }
@@ -274,8 +276,8 @@ footer a { color: var(--muted); }
           <img class="only-dark" src="images/detail-dark.png" alt="Event details in dark mode">
         </picture>
         <picture>
-          <img class="only-light" src="images/popover-light.png" alt="Orbit's calendar: month grid, today's agenda with the current meeting expanded, and year and day progress">
-          <img class="only-dark" src="images/popover-dark.png" alt="Orbit's calendar in dark mode">
+          <img class="only-light" src="images/day-light.png" alt="Orbit's calendar: month grid, today hour by hour with a line at the current time, and year and day progress">
+          <img class="only-dark" src="images/day-dark.png" alt="Orbit's Day view in dark mode">
         </picture>
       </div>
     </div>
@@ -333,17 +335,18 @@ footer a { color: var(--muted); }
 
     <div class="feature">
       <div class="copy">
-        <h3>Your week, at a glance.</h3>
-        <p>A month grid with colored dots for each calendar, and a scrolling agenda of the days ahead. Each day's all-day events stay pinned at the top while you scroll through it.</p>
+        <h3>Your day hour by hour, or the week ahead.</h3>
+        <p>Orbit opens on the Day view: today laid out hour by hour like Calendar, with overlapping meetings side by side and a line at the current time. Prefer a list? Switch to the agenda of the days ahead in Settings, shown here, where each day's all-day events stay pinned while you scroll.</p>
         <ul>
+          <li>Pick any date in the month grid to see that day</li>
           <li>Finished events step aside so what's next is always on top</li>
           <li>Free-time gaps, week numbers and a day summary, if you want them</li>
           <li>Year and day progress bars, for a little perspective</li>
         </ul>
       </div>
-      <div class="visual crop">
-        <img class="only-light" src="images/popover-light.png" alt="Month grid and agenda" loading="lazy">
-        <img class="only-dark" src="images/popover-dark.png" alt="Month grid and agenda in dark mode" loading="lazy">
+      <div class="visual crop agenda">
+        <img class="only-light" src="images/agenda-light.png" alt="Month grid and the agenda of the days ahead" loading="lazy">
+        <img class="only-dark" src="images/agenda-dark.png" alt="Month grid and agenda in dark mode" loading="lazy">
       </div>
     </div>
   </div>

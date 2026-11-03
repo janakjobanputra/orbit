@@ -27,15 +27,26 @@ brew install --cask janakjobanputra/tap/orbit-calendar
 ## Screenshots
 
 <p>
-  <img src="docs/images/popover-light.png" width="280" alt="Calendar popover">
-  <img src="docs/images/detail-light.png" width="280" alt="Event details">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/day-dark.png">
+    <img src="docs/images/day-light.png" width="250" alt="Day view, the default">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/agenda-dark.png">
+    <img src="docs/images/agenda-light.png" width="250" alt="Agenda view">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/detail-dark.png">
+    <img src="docs/images/detail-light.png" width="250" alt="Event details">
+  </picture>
 </p>
 
 ## What it does
 
 The menu bar shows the date, the time, or your next meeting. Click it and you get your month and the days ahead.
 
-- Agenda of the days ahead. Each day's all-day events stay pinned at the top while you scroll through it.
+- A Day view of today (or any date you pick) hour by hour, like Calendar, with overlapping meetings side by side and a line at the current time.
+- Or, set in Settings, an agenda of the days ahead. Each day's all-day events stay pinned at the top while you scroll through it.
 - The meeting you're in, or the one starting in the next 10 minutes, expands with Join, Map and link buttons.
 - Click any event for its details: calendar, video link, location, links, guests and notes. Open it in Calendar, copy it, or delete it.
 - One-click join for Zoom, Meet, Teams, Webex and more, plus any video service you add.

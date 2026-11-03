@@ -386,8 +386,12 @@ final class PopoverRenderingTests: XCTestCase {
         }.state
         state.preferences.showYearProgress = true
         state.preferences.showDayProgress = true
-        for scheme in [ColorScheme.light, .dark] {
-            attach(render(state, scheme: scheme), "Screenshot popover \(scheme == .dark ? "dark" : "light")")
+        // The Day view is what a fresh install opens on; the agenda is the other option.
+        for view in [EventsView.day, .agenda] {
+            state.preferences.eventsView = view
+            for scheme in [ColorScheme.light, .dark] {
+                attach(render(state, scheme: scheme), "Screenshot \(view.rawValue) \(scheme == .dark ? "dark" : "light")")
+            }
         }
 
         var detail = review
