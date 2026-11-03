@@ -19,7 +19,12 @@ final class AppState {
     @ObservationIgnored private var tickTask: Task<Void, Never>?
 
     private(set) var access: EventStoreService.Access = .notDetermined
-    private(set) var now: Date
+    /// The time the calendar shows, moved on each minute.
+    private(set) var now: Date {
+        didSet { menuBarNow = now }
+    }
+    /// The time the menu bar shows: the same as `now`, but moved every second when the title includes seconds.
+    private(set) var menuBarNow: Date
     private(set) var calendars: [CalendarInfo] = []
     private(set) var systemDefaultCalendarID: String?
     private var gridEvents: [CalendarEvent] = []
@@ -54,6 +59,7 @@ final class AppState {
         self.baseCalendar = calendar
         self.clock = clock
         let start = clock()
+        menuBarNow = start
         now = start
         displayedMonth = start
         selectedDate = start
@@ -82,6 +88,7 @@ final class AppState {
 
     func stop() {
         tickTask?.cancel()
+        tickTask = nil
     }
 
     // MARK: - Derived data
@@ -99,7 +106,7 @@ final class AppState {
 
     var menuBarTitle: String {
         MenuBarFormatter(format: preferences.menuBarFormat, leadMinutes: preferences.nextEventLeadMinutes, calendar: calendar)
-            .title(now: now, events: visible(nearbyEvents))
+            .title(now: menuBarNow, events: visible(nearbyEvents))
     }
 
     var daySummary: DaySummary {
@@ -313,22 +320,49 @@ final class AppState {
         }
     }
 
-    /// Wakes at the top of each minute so the menu bar clock stays exact.
+    /// Wakes at the top of each minute, or each second while the menu bar shows seconds, so the clock stays exact.
+    /// Starts over whenever the menu bar format changes, so turning seconds on takes effect straight away.
     private func startTicking() {
         tickTask?.cancel()
-        tickTask = Task { [weak self] in
-            while !Task.isCancelled {
-                let current = self?.clock() ?? Date()
-                let next = Calendar.current.nextDate(after: current, matching: DateComponents(second: 0), matchingPolicy: .nextTime)
-                    ?? current.addingTimeInterval(60)
-                try? await Task.sleep(for: .seconds(next.timeIntervalSince(current)))
-                guard let self else { return }
-                let previous = self.now
-                self.now = self.clock()
-                if !self.calendar.isDate(previous, inSameDayAs: self.now) || self.now.timeIntervalSince(previous) > 120 {
-                    self.reload()
-                }
+        withObservationTracking {
+            _ = preferences.menuBarFormat
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self, self.tickTask != nil else { return }
+                self.startTicking()
             }
         }
+        tickTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let current = self?.clock(), let showsSeconds = self?.preferences.menuBarFormat.showsSeconds else { return }
+                let next = Self.nextTick(after: current, showsSeconds: showsSeconds)
+                try? await Task.sleep(for: .seconds(next.timeIntervalSince(current)))
+                guard !Task.isCancelled, let self else { return }
+                self.tick()
+            }
+        }
+    }
+
+    /// Moves the clock forward: the calendar on each new minute, the menu bar every second if it shows seconds.
+    func tick() {
+        let current = clock()
+        if calendar.isDate(current, equalTo: now, toGranularity: .minute) {
+            if preferences.menuBarFormat.showsSeconds { menuBarNow = current }
+            return
+        }
+        let previous = now
+        now = current
+        if !calendar.isDate(previous, inSameDayAs: now) || now.timeIntervalSince(previous) > 120 {
+            reload()
+        }
+    }
+
+    /// The next whole second, or the start of the next minute.
+    nonisolated static func nextTick(after date: Date, showsSeconds: Bool, calendar: Calendar = .current) -> Date {
+        if showsSeconds {
+            return Date(timeIntervalSinceReferenceDate: (date.timeIntervalSinceReferenceDate + 1).rounded(.down))
+        }
+        return calendar.nextDate(after: date, matching: DateComponents(second: 0), matchingPolicy: .nextTime)
+            ?? date.addingTimeInterval(60)
     }
 }

@@ -93,6 +93,24 @@ struct MenuBarFormat: Codable, Equatable, Sendable {
 
     var uses24HourTime: Bool { timePattern.contains("H") }
 
+    /// Whether the title includes seconds, so the clock has to tick every second.
+    var showsSeconds: Bool {
+        (tokens.contains(.time) && Self.hasSeconds(timePattern)) || (tokens.contains(.date) && Self.hasSeconds(datePattern))
+    }
+
+    /// Looks for the `s` field outside quoted literal text.
+    private static func hasSeconds(_ pattern: String) -> Bool {
+        var isQuoted = false
+        for character in pattern {
+            if character == "'" {
+                isQuoted.toggle()
+            } else if character == "s", !isQuoted {
+                return true
+            }
+        }
+        return false
+    }
+
     /// Switches the time pattern between 12- and 24-hour clocks, keeping the rest of it.
     mutating func setUses24HourTime(_ enabled: Bool) {
         if enabled {
