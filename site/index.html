@@ -87,8 +87,10 @@ nav .btn { padding: 8px 14px; font-size: 14px; border-radius: 10px; }
 .hero { position: relative; overflow: hidden; padding: 72px 0 0; text-align: center; }
 .orbit-rings { position: absolute; inset: -40% -20% auto; height: 900px; pointer-events: none; opacity: .55; }
 .orbit-rings span { position: absolute; left: 50%; top: 50%; border: 1px dashed var(--line); border-radius: 50%; transform: translate(-50%, -50%); }
-.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 6px 12px; border-radius: 999px; }
-.pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.hero-mark { display: block; width: 64px; height: 64px; margin: 0 auto; }
+.hero-mark .planet { transform-box: view-box; transform-origin: 50px 50px; animation: orbit 8s linear infinite; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .hero-mark .planet { animation: none; } }
 h1 { font-size: clamp(42px, 7vw, 76px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800; margin: 22px auto 18px; max-width: 14ch; }
 h1 em { font-style: normal; color: var(--accent); }
 .lede { font-size: clamp(18px, 2.2vw, 21px); color: var(--muted); max-width: 40ch; margin: 0 auto 30px; }
@@ -244,7 +246,11 @@ footer a { color: var(--muted); }
     <span style="width:1120px;height:1120px"></span>
   </div>
   <div class="wrap" style="position:relative">
-    <span class="pill"><i></i>Version 1.0 · Free and open source</span>
+    <svg class="hero-mark" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="35" fill="none" stroke="#16A8C4" stroke-width="5" stroke-opacity=".45"/>
+      <circle cx="50" cy="50" r="17" fill="#16A8C4"/>
+      <circle class="planet" cx="74.75" cy="25.25" r="8" fill="#16A8C4"/>
+    </svg>
     <h1>Your day, <em>in orbit.</em></h1>
     <p class="lede">A calendar that lives in your Mac's menu bar. See what's next at a glance, join meetings in one click, and get back to work.</p>
     <div class="cta">
