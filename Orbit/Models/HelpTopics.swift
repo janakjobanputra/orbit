@@ -27,7 +27,7 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .menuBar,
             question: "My menu bar already shows the date and time. Can I hide them?",
-            answer: "macOS can't remove its clock entirely, but you can make it tiny. Open System Settings › Menu Bar, click Clock Options, then set Show date to Never, or choose the Analog style for a small clock icon with no date or day. Orbit can show the date and time in any format you like under Display › Menu bar."
+            answer: "macOS can't remove its clock entirely, but you can make it tiny. Open System Settings › Menu Bar (on macOS 15, System Settings › Control Center), click Clock Options, then set Show date to Never, or choose the Analog style for a small clock icon with no date or day. Orbit can show the date and time in any format you like under Display › Menu bar."
         ),
         HelpTopic(
             group: .menuBar,
@@ -37,7 +37,7 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .menuBar,
             question: "I can't see Orbit in my menu bar.",
-            answer: "On a MacBook with a notch, items that don't fit are hidden behind it. ⌘-drag a few other icons off the menu bar, or choose the Icon style under Display › Menu bar so Orbit takes up the least room. Also check System Settings › Menu Bar › Allow in the Menu Bar, and make sure Orbit is turned on there."
+            answer: "On a MacBook with a notch, items that don't fit are hidden behind it. ⌘-drag a few other icons off the menu bar, or choose the Icon style under Display › Menu bar so Orbit takes up the least room. On macOS 26, also check System Settings › Menu Bar › Allow in the Menu Bar, and make sure Orbit is turned on there."
         ),
         HelpTopic(
             group: .menuBar,

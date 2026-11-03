@@ -169,7 +169,7 @@ private struct SettingsPreview: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 3)
-            .glassEffect(.regular, in: .capsule)
+            .menuBarCapsule()
             // The same view the popover shows, so size and content always match.
             PopoverView(openSettings: {})
                 .clipShape(.rect(cornerRadius: 16))
@@ -203,5 +203,17 @@ private struct Backdrop: View {
 
     var body: some View {
         Color(nsColor: .underPageBackgroundColor)
+    }
+}
+
+private extension View {
+    /// Liquid Glass on macOS 26, as the real menu bar draws it; a frosted capsule on macOS 15.
+    @ViewBuilder
+    func menuBarCapsule() -> some View {
+        if #available(macOS 26, *) {
+            glassEffect(.regular, in: .capsule)
+        } else {
+            background(.regularMaterial, in: Capsule())
+        }
     }
 }
