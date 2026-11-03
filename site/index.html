@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit — your calendar in the menu bar</title>
+<meta name="description" content="Orbit is a free, open-source menu-bar calendar for macOS. See what's next at a glance, join meetings in one click, and keep your day in orbit.">
+<meta property="og:title" content="Orbit — your calendar in the menu bar">
+<meta property="og:description" content="A free, open-source menu-bar calendar for macOS.">
+<meta property="og:image" content="images/popover-light.png">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fbfcfd;
+  --bg-soft: #f2f6f8;
+  --card: #ffffff;
+  --text: #0d1b22;
+  --muted: #546570;
+  --faint: #8a99a3;
+  --line: rgba(13, 27, 34, 0.09);
+  --accent: #0e9ab5;
+  --accent-strong: #0a7f96;
+  --accent-soft: rgba(21, 189, 214, 0.12);
+  --on-accent: #ffffff;
+  --shadow: 0 30px 60px -20px rgba(13, 52, 66, 0.28), 0 10px 24px -12px rgba(13, 52, 66, 0.18);
+  --radius: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1014;
+    --bg-soft: #0f181d;
+    --card: #121d23;
+    --text: #eaf2f5;
+    --muted: #9fb0b9;
+    --faint: #6b7d87;
+    --line: rgba(234, 242, 245, 0.09);
+    --accent: #2cc4dd;
+    --accent-strong: #5ad6ea;
+    --accent-soft: rgba(44, 196, 221, 0.14);
+    --on-accent: #062027;
+    --shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7), 0 10px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1014; --bg-soft: #0f181d; --card: #121d23; --text: #eaf2f5; --muted: #9fb0b9; --faint: #6b7d87;
+  --line: rgba(234, 242, 245, 0.09); --accent: #2cc4dd; --accent-strong: #5ad6ea; --accent-soft: rgba(44, 196, 221, 0.14); --on-accent: #062027;
+  --shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7), 0 10px 24px -12px rgba(0, 0, 0, 0.5);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 17px/1.6 Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-strong); }
+img { max-width: 100%; display: block; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+/* Nav */
+nav { position: sticky; top: 0; z-index: 10; backdrop-filter: saturate(160%) blur(16px); -webkit-backdrop-filter: saturate(160%) blur(16px); background: color-mix(in srgb, var(--bg) 78%, transparent); border-bottom: 1px solid var(--line); }
+nav .wrap { display: flex; align-items: center; gap: 28px; height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); }
+.brand img { width: 28px; height: 28px; }
+nav .links { display: flex; gap: 22px; margin-left: auto; align-items: center; font-size: 15px; }
+nav .links a { color: var(--muted); }
+nav .links a:hover { color: var(--text); }
+nav .links a.btn-primary, nav .links a.btn-primary:hover { color: var(--on-accent); }
+.btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; border-radius: 12px; padding: 12px 20px; transition: transform .15s ease, background .15s ease; }
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-strong); color: var(--on-accent); }
+.btn-ghost { border: 1px solid var(--line); color: var(--text); background: var(--card); }
+.btn-ghost:hover { color: var(--text); border-color: var(--faint); }
+nav .btn { padding: 8px 14px; font-size: 14px; border-radius: 10px; }
+
+/* Hero */
+.hero { position: relative; overflow: hidden; padding: 72px 0 0; text-align: center; }
+.orbit-rings { position: absolute; inset: -40% -20% auto; height: 900px; pointer-events: none; opacity: .55; }
+.orbit-rings span { position: absolute; left: 50%; top: 50%; border: 1px dashed var(--line); border-radius: 50%; transform: translate(-50%, -50%); }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 6px 12px; border-radius: 999px; }
+.pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+h1 { font-size: clamp(42px, 7vw, 76px); line-height: 1.02; letter-spacing: -0.035em; font-weight: 800; margin: 22px auto 18px; max-width: 14ch; }
+h1 em { font-style: normal; color: var(--accent); }
+.lede { font-size: clamp(18px, 2.2vw, 21px); color: var(--muted); max-width: 40ch; margin: 0 auto 30px; }
+.cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.meta { margin-top: 16px; font-size: 14px; color: var(--faint); }
+.meta b { color: var(--muted); font-weight: 500; }
+
+/* Menu bar + product shot */
+.stage { position: relative; margin: 56px auto 0; max-width: 760px; }
+.menubar { display: flex; justify-content: flex-end; align-items: center; gap: 18px; height: 34px; padding: 0 16px; border-radius: 12px 12px 0 0; background: color-mix(in srgb, var(--card) 80%, transparent); border: 1px solid var(--line); border-bottom: 0; font-size: 13px; color: var(--muted); }
+.menubar .item { font-weight: 500; color: var(--text); background: var(--accent-soft); padding: 3px 10px; border-radius: 7px; font-variant-numeric: tabular-nums; }
+.menubar svg { width: 15px; height: 15px; opacity: .6; }
+.shot { display: flex; justify-content: flex-end; gap: 22px; align-items: flex-start; padding: 0 0 0 0; }
+.shot img { width: 300px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--line); }
+.shot .side { margin-top: 150px; }
+.shot picture:last-child img { margin-right: 24px; }
+.fade { height: 120px; margin-top: -120px; position: relative; background: linear-gradient(to bottom, transparent, var(--bg)); }
+
+/* Sections */
+section { padding: 96px 0; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
+h2 { font-size: clamp(32px, 4.4vw, 48px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 800; margin: 0 0 16px; }
+.section-lede { color: var(--muted); font-size: 19px; max-width: 52ch; margin: 0 0 48px; }
+
+.feature { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; padding: 40px 0; }
+.feature + .feature { border-top: 1px solid var(--line); }
+.feature.flip .copy { order: 2; }
+.feature h3 { font-size: 28px; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 12px; font-weight: 700; }
+.feature p { color: var(--muted); margin: 0 0 12px; }
+.feature ul { margin: 16px 0 0; padding: 0; list-style: none; color: var(--muted); }
+.feature li { padding: 6px 0 6px 26px; position: relative; }
+.feature li::before { content: ""; position: absolute; left: 4px; top: 15px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.visual { display: flex; justify-content: center; padding: 32px; border-radius: 24px; background: var(--bg-soft); border: 1px solid var(--line); }
+.visual img { width: 300px; border-radius: 16px; box-shadow: var(--shadow); }
+.visual.crop { height: 460px; overflow: hidden; align-items: flex-start; }
+
+/* Mock card for the "now" section */
+.nowcard { width: 320px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); font-size: 14px; }
+.nowcard .hi { display: flex; gap: 10px; border-radius: 12px; padding: 12px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.nowcard .bar { width: 3px; border-radius: 2px; background: #3a85f7; }
+.nowcard .row { display: flex; justify-content: space-between; color: var(--muted); font-size: 12.5px; }
+.nowcard .left { color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 8px; font-weight: 600; font-size: 12px; }
+.nowcard .title { font-weight: 600; font-size: 16px; margin: 4px 0 10px; color: var(--text); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-size: 12.5px; font-weight: 500; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+.chip.join { background: #3a85f7; color: #fff; border-color: transparent; }
+.nowline { display: flex; align-items: center; gap: 4px; margin: 12px 0; }
+.nowline i { width: 6px; height: 6px; border-radius: 50%; background: #ff453a; }
+.nowline b { flex: 1; height: 1px; background: rgba(255, 69, 58, .5); }
+.muted-row { display: flex; gap: 10px; opacity: .5; margin-bottom: 4px; }
+.muted-row .bar { background: #34c759; }
+.next-row { display: flex; gap: 10px; margin-top: 12px; }
+.next-row .bar { background: #d4537e; }
+.small { font-size: 12.5px; color: var(--muted); }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+.card .icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; }
+.card .icon svg { width: 19px; height: 19px; }
+.card h4 { margin: 0 0 6px; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.55; }
+
+/* Keys */
+.keys { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 40px; max-width: 760px; }
+.key { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.key span { color: var(--muted); }
+kbd { font: 500 14px/1 "JetBrains Mono", ui-monospace, monospace; padding: 7px 10px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); box-shadow: 0 2px 0 var(--line); color: var(--text); white-space: nowrap; }
+
+/* Privacy band */
+.band { background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.band .wrap { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.stat b { display: block; font-size: 30px; letter-spacing: -0.03em; font-weight: 800; }
+.stat span { color: var(--muted); font-size: 14px; }
+
+/* FAQ */
+.faq { max-width: 760px; }
+details { border-bottom: 1px solid var(--line); padding: 18px 0; }
+summary { cursor: pointer; font-weight: 600; font-size: 18px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--faint); font-weight: 400; font-size: 22px; line-height: 1; }
+details[open] summary::after { content: "–"; }
+details p { color: var(--muted); margin: 10px 0 0; }
+
+/* Final CTA */
+.final { text-align: center; padding: 120px 0; position: relative; overflow: hidden; }
+.final img.mark { width: 88px; height: 88px; margin: 0 auto 22px; }
+.final h2 { max-width: 16ch; margin: 0 auto 14px; }
+.final p { color: var(--muted); margin: 0 auto 30px; }
+
+footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--faint); font-size: 14px; }
+footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+footer .brand { font-size: 15px; }
+footer .brand img { width: 22px; height: 22px; }
+footer .links { margin-left: auto; display: flex; gap: 20px; }
+footer a { color: var(--muted); }
+
+.theme-toggle { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 10px; width: 34px; height: 34px; display: grid; place-items: center; cursor: pointer; }
+.theme-toggle svg { width: 16px; height: 16px; }
+
+.only-dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .only-light { display: none; } :root:not([data-theme="light"]) .only-dark { display: block; } }
+:root[data-theme="dark"] .only-light { display: none; }
+:root[data-theme="dark"] .only-dark { display: block; }
+
+@media (max-width: 860px) {
+  nav .links a.hide-sm { display: none; }
+  .feature, .band .wrap { grid-template-columns: 1fr; gap: 32px; }
+  .feature.flip .copy { order: 0; }
+  .grid { grid-template-columns: 1fr 1fr; }
+  .keys { grid-template-columns: 1fr; }
+  .shot .side { display: none; }
+  .shot { justify-content: center; }
+  .shot picture:last-child img { margin-right: 0; }
+  .menubar { justify-content: center; }
+  .menubar .hide-sm { display: none; }
+  section { padding: 72px 0; }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 0 16px; }
+  .grid, .stats { grid-template-columns: 1fr; }
+  nav .links { gap: 12px; }
+  .visual { padding: 20px; }
+  .visual img, .nowcard { width: 100%; max-width: 300px; }
+  footer .links { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="images/icon.png" alt="">Orbit</a>
+    <div class="links">
+      <a class="hide-sm" href="#features">Features</a>
+      <a class="hide-sm" href="#shortcuts">Shortcuts</a>
+      <a class="hide-sm" href="#faq">FAQ</a>
+      <a href="https://github.com/janakjobanputra/orbit">GitHub</a>
+      <button class="theme-toggle" id="theme" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      <a class="btn btn-primary" href="https://github.com/janakjobanputra/orbit/releases/latest/download/Orbit.dmg">Download</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="orbit-rings" aria-hidden="true">
+    <span style="width:520px;height:520px"></span>
+    <span style="width:820px;height:820px"></span>
+    <span style="width:1120px;height:1120px"></span>
+  </div>
+  <div class="wrap" style="position:relative">
+    <span class="pill"><i></i>Version 1.0 · Free and open source</span>
+    <h1>Your day, <em>in orbit.</em></h1>
+    <p class="lede">A calendar that lives in your Mac's menu bar. See what's next at a glance, join meetings in one click, and get back to work.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/janakjobanputra/orbit/releases/latest/download/Orbit.dmg">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg>
+        Download for Mac
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/janakjobanputra/orbit">View on GitHub</a>
+    </div>
+    <p class="meta"><b>Free</b> · macOS 26 or later · Signed and notarized · No account</p>
+
+    <div class="stage">
+      <div class="menubar" aria-hidden="true">
+        <svg class="hide-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01"/></svg>
+        <svg class="hide-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2"/></svg>
+        <span class="item">Sat, Oct 31 · 1:12 PM</span>
+      </div>
+      <div class="shot">
+        <picture class="side">
+          <img class="only-light" src="images/detail-light.png" alt="Event details for a design review: join link, location, links, guests and notes">
+          <img class="only-dark" src="images/detail-dark.png" alt="Event details in dark mode">
+        </picture>
+        <picture>
+          <img class="only-light" src="images/popover-light.png" alt="Orbit's calendar: month grid, today's agenda with the current meeting expanded, and year and day progress">
+          <img class="only-dark" src="images/popover-dark.png" alt="Orbit's calendar in dark mode">
+        </picture>
+      </div>
+    </div>
+  </div>
+  <div class="fade" aria-hidden="true"></div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <p class="eyebrow">What it does</p>
+    <h2>Everything about today, one click away.</h2>
+    <p class="section-lede">Orbit reads the calendars your Mac already syncs — iCloud, Google, Exchange, anything in Apple Calendar — and puts them where you can always reach them.</p>
+
+    <div class="feature">
+      <div class="copy">
+        <h3>Never hunt for a meeting link again.</h3>
+        <p>The meeting you're in, or the one starting in the next ten minutes, expands with everything you need: how long is left, and one-click buttons to join, find the room, or open the doc.</p>
+        <ul>
+          <li>Finds Zoom, Meet, Teams, Webex and more in any event</li>
+          <li>Add your own video services</li>
+          <li><kbd>⇧⌘J</kbd> joins your next meeting from anywhere</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <div class="nowcard" aria-label="Example of an expanded current meeting">
+          <div class="muted-row"><span class="bar" style="width:3px;border-radius:2px"></span><div><div style="font-weight:600">Lunch with Priya</div><div class="small">12:00 – 12:50 PM</div></div></div>
+          <div class="nowline"><i></i><b></b></div>
+          <div class="hi">
+            <span class="bar"></span>
+            <div style="flex:1">
+              <div class="row"><span>1:00 – 1:45 PM</span><span class="left">33m left</span></div>
+              <div class="title">Design review</div>
+              <div class="chips"><span class="chip join">Join</span><span class="chip">Map</span><span class="chip">figma.com</span></div>
+            </div>
+          </div>
+          <div class="next-row"><span class="bar" style="width:3px;border-radius:2px"></span><div><div style="font-weight:600">Ship v1.0</div><div class="small">3:00 – 4:00 PM</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature flip">
+      <div class="copy">
+        <h3>Every detail, without opening Calendar.</h3>
+        <p>Click any event for the full picture: which calendar it's on, when, the video link, location, links, who's coming and the notes — with links you can click.</p>
+        <ul>
+          <li>Open in Calendar, copy the details, or delete it</li>
+          <li><kbd>Esc</kbd> steps back out, one layer at a time</li>
+        </ul>
+      </div>
+      <div class="visual">
+        <img class="only-light" src="images/detail-light.png" alt="Event detail popout" loading="lazy">
+        <img class="only-dark" src="images/detail-dark.png" alt="Event detail popout in dark mode" loading="lazy">
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="copy">
+        <h3>Your week, at a glance.</h3>
+        <p>A month grid with colored dots for each calendar, and a scrolling agenda of the days ahead. Each day's all-day events stay pinned at the top while you scroll through it.</p>
+        <ul>
+          <li>Finished events step aside so what's next is always on top</li>
+          <li>Free-time gaps, week numbers and a day summary, if you want them</li>
+          <li>Year and day progress bars, for a little perspective</li>
+        </ul>
+      </div>
+      <div class="visual crop">
+        <img class="only-light" src="images/popover-light.png" alt="Month grid and agenda" loading="lazy">
+        <img class="only-dark" src="images/popover-dark.png" alt="Month grid and agenda in dark mode" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow">Made to fit</p>
+    <h2>Tune it until it feels like yours.</h2>
+    <p class="section-lede">A Settings window with a live preview of the calendar, so you see every change the moment you make it.</p>
+    <div class="grid">
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="6" rx="2"/><path d="M7 7h6"/></svg></div><h4>Your menu bar, your way</h4><p>Date, time, next meeting or week number, in any order and format you like.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div><h4>Four text sizes</h4><p>From compact to extra large, with three spacing options for the calendar and the agenda.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></div><h4>Light, dark or automatic</h4><p>Follows your Mac, or pick one and stick with it.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M7 12h10M10 18h4"/></svg></div><h4>Only what matters</h4><p>Hide calendars, filter out titles like "Focus time", hide all-day or past events.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></div><h4>Maps your way</h4><p>Locations open in Apple Maps or Google Maps, your choice.</p></div>
+      <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div><h4>Quick add</h4><p>Create an event with a location, link and notes without leaving the menu bar.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="shortcuts" style="padding-top:0">
+  <div class="wrap">
+    <p class="eyebrow">Keyboard</p>
+    <h2>Fast from anywhere.</h2>
+    <p class="section-lede">Two global shortcuts you can change, and a handful more inside the calendar.</p>
+    <div class="keys">
+      <div class="key"><span>Open the calendar</span><kbd>⇧⌘C</kbd></div>
+      <div class="key"><span>Join next meeting</span><kbd>⇧⌘J</kbd></div>
+      <div class="key"><span>New event</span><kbd>⌘N</kbd></div>
+      <div class="key"><span>Search events</span><kbd>⌘F</kbd></div>
+      <div class="key"><span>Jump to today</span><kbd>⌘T</kbd></div>
+      <div class="key"><span>Show or hide the month</span><kbd>⌘M</kbd></div>
+      <div class="key"><span>Settings</span><kbd>⌘,</kbd></div>
+      <div class="key"><span>Step back out</span><kbd>Esc</kbd></div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Private by design</p>
+      <h2>Your calendar never leaves your Mac.</h2>
+      <p class="section-lede" style="margin-bottom:0">Orbit has no account, no server and no analytics. It reads your events through Apple's own calendar framework, the same way Calendar does, and that's all it asks permission for.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>0</b><span>accounts to create</span></div>
+      <div class="stat"><b>0</b><span>servers your events touch</span></div>
+      <div class="stat"><b>1</b><span>permission: your calendars</span></div>
+      <div class="stat"><b>100%</b><span>open source, GPL-3.0</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <p class="eyebrow">Questions</p>
+    <h2>Good to know.</h2>
+    <div class="faq">
+      <details open><summary>Which calendars does it work with?</summary><p>Anything your Mac syncs in Apple Calendar: iCloud, Google, Microsoft Exchange and Outlook, Yahoo, and subscribed calendars. Add accounts in System Settings › Internet Accounts and they show up in Orbit.</p></details>
+      <details><summary>Is it really free?</summary><p>Yes. Orbit is free and open source under the GPL-3.0. The code is on GitHub, and you're welcome to build it yourself.</p></details>
+      <details><summary>What do I need to run it?</summary><p>A Mac running macOS 26 Tahoe or later.</p></details>
+      <details><summary>Why does it ask for calendar access?</summary><p>To show your events. That's the only permission Orbit needs, and nothing is sent anywhere.</p></details>
+      <details><summary>How do I quit it?</summary><p>Right-click (or two-finger click) Orbit in the menu bar and choose Quit Orbit.</p></details>
+      <details><summary>Can I make it open at login?</summary><p>Yes — turn on Launch at login in Orbit's Settings › General.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <img class="mark" src="images/icon.png" alt="">
+    <h2>Put your day in orbit.</h2>
+    <p>Free for Mac. Takes a minute to set up.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/janakjobanputra/orbit/releases/latest/download/Orbit.dmg">Download for Mac</a>
+      <a class="btn btn-ghost" href="https://github.com/janakjobanputra/orbit">Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="images/icon.png" alt="">Orbit</a>
+    <span>Version 1.0 · Made by Janak Jobanputra</span>
+    <div class="links">
+      <a href="https://github.com/janakjobanputra/orbit">GitHub</a>
+      <a href="https://github.com/janakjobanputra/orbit/releases">Releases</a>
+      <a href="https://github.com/janakjobanputra/orbit/blob/main/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    try { var saved = localStorage.getItem('orbit-theme'); if (saved) root.dataset.theme = saved; } catch (e) {}
+    document.getElementById('theme').addEventListener('click', function () {
+      var dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('orbit-theme', root.dataset.theme); } catch (e) {}
+    });
+  })();
+</script>
+</body>
+</html>
