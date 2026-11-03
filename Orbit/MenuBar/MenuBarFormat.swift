@@ -31,6 +31,18 @@ enum MenuBarPreset: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var label: String { rawValue.capitalized }
 
+    /// What the style puts in the menu bar, shown under the Style setting.
+    var summary: String {
+        switch self {
+        case .classic: "The date and time."
+        case .minimal: "Just the time."
+        case .agenda: "Your next meeting, or the date and time when nothing's coming up."
+        case .info: "The date, the time and your next meeting."
+        case .icon: "Only Orbit's logo."
+        case .custom: "The items you choose, in your order."
+        }
+    }
+
     /// The tokens a preset shows; `nil` for custom, which uses the user's own list.
     var tokens: [MenuBarToken]? {
         switch self {

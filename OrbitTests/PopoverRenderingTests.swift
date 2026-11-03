@@ -438,6 +438,20 @@ final class PopoverRenderingTests: XCTestCase {
         }
     }
 
+    /// Settings › Display with the Icon style picked, to check the menu bar section isn't crowded.
+    func testDisplayPane() async {
+        let state = await makeState()
+        state.preferences.menuBarFormat.preset = .icon
+        let root = DisplaySettingsTab()
+            .environment(state)
+            .frame(width: 560, height: 420)
+        let host = NSHostingView(rootView: root)
+        host.frame.size = CGSize(width: 560, height: 420)
+        let window = NSWindow(contentRect: host.frame, styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = host
+        attach(snapshot(host), "Display pane")
+    }
+
     /// Settings › Help with a couple of answers open.
     func testHelpPane() async {
         let state = await makeState()

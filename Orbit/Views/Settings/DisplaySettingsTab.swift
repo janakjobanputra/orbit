@@ -78,10 +78,12 @@ private struct MenuBarSection: View {
         let format = preferences.menuBarFormat
 
         Section("Menu bar") {
-            Picker("Style", selection: $preferences.menuBarFormat.preset) {
+            Picker(selection: $preferences.menuBarFormat.preset) {
                 ForEach(MenuBarPreset.allCases) { Text($0.label).tag($0) }
+            } label: {
+                Text("Style")
+                Text(format.preset.summary)
             }
-            .pickerStyle(.segmented)
 
             if format.preset == .custom {
                 TokenEditor(tokens: $preferences.menuBarFormat.customTokens)
