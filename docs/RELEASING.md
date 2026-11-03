@@ -2,7 +2,7 @@
 
 Two release paths, both from `scripts/release.sh`:
 
-- `make dmg` builds `dist/Orbit-<version>.dmg`, signed with Developer ID and notarized by Apple, for people to download from GitHub Releases or the website.
+- `make dmg` builds `dist/Orbit-v<version>.dmg`, signed with Developer ID and notarized by Apple, for people to download from GitHub Releases or the website.
 - `make testflight` uploads a build to App Store Connect, where it shows up in TestFlight.
 - `make cask` points the Homebrew cask (`Casks/orbit-calendar.rb` in [janakjobanputra/homebrew-tap](https://github.com/janakjobanputra/homebrew-tap)) at the new DMG. It expects that repo checked out next to this one, or set `TAP_DIR`.
 
@@ -50,6 +50,6 @@ Xcode must be signed in to the same account (**Settings › Accounts**), because
 1. Bump `MARKETING_VERSION` in `project.yml` and commit.
 2. Run `make test`.
 3. Run `make dmg`. It archives, exports, builds the disk image, notarizes (a few minutes), staples and checks it with Gatekeeper.
-4. Create a GitHub release and attach `dist/Orbit-<version>.dmg` and `dist/Orbit.dmg`. The README and website link to `releases/latest/download/Orbit.dmg`.
+4. Create a GitHub release and attach `dist/Orbit-v<version>.dmg` and `dist/Orbit.dmg`. The website's Download buttons and the README go to `try-orbit.app/download`, which redirects to the newest release's `Orbit-v<version>.dmg` (see `site-worker.js`). `Orbit.dmg` is for `releases/latest/download/Orbit.dmg` links and for Orbit 1.1's in-app update check.
 5. Run `make cask`, then commit and push the tap repo. `brew upgrade` picks up the new version from there.
 6. Run `make testflight`. After processing (usually 10–30 minutes), add the build to a tester group in **TestFlight**. External testers need a one-time beta review. The export-compliance question is pre-answered in `Info.plist` (`ITSAppUsesNonExemptEncryption` is false).

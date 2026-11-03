@@ -16,7 +16,7 @@ Native Swift, a few MB, reads your Mac calendar. No account, no subscription, no
 
 ## Install
 
-Download [Orbit.dmg](https://github.com/janakjobanputra/orbit/releases/latest/download/Orbit.dmg), open it, and drag Orbit into Applications. It's signed and notarized, so it opens like any other app.
+[Download Orbit](https://try-orbit.app/download), open the disk image, and drag Orbit into Applications. It's signed and notarized, so it opens like any other app.
 
 Or with [Homebrew](https://brew.sh):
 

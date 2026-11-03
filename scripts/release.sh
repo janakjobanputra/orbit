@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Builds Orbit for release.
-#   scripts/release.sh dmg         Developer ID–signed, notarized dist/Orbit-<version>.dmg
+#   scripts/release.sh dmg         Developer ID–signed, notarized dist/Orbit-v<version>.dmg
 #   scripts/release.sh testflight  Uploads a build to App Store Connect for TestFlight
 #   scripts/release.sh cask        Points the Homebrew cask at the DMG built by `dmg`
 # One-time account setup is in docs/RELEASING.md.
@@ -51,7 +51,7 @@ dmg() {
   archive
   export_archive developer-id export
   local app="$DIST/export/Orbit.app"
-  local dmg="$DIST/Orbit-$VERSION.dmg"
+  local dmg="$DIST/Orbit-v$VERSION.dmg"
   local stage="$DIST/dmg-stage"
   rm -rf "$stage" "$dmg"
   mkdir -p "$stage"
@@ -70,11 +70,11 @@ dmg() {
   xcrun stapler staple "$dmg"
   spctl --assess --type open --context context:primary-signature -v "$dmg"
   cp "$dmg" "$DIST/Orbit.dmg"
-  echo "Built $dmg (and $DIST/Orbit.dmg for the website's latest link)"
+  echo "Built $dmg (and $DIST/Orbit.dmg for releases/latest/download links)"
 }
 
 cask() {
-  local dmg="$DIST/Orbit-$VERSION.dmg"
+  local dmg="$DIST/Orbit-v$VERSION.dmg"
   [[ -f "$dmg" ]] || { echo "No $dmg. Run make dmg first."; exit 1; }
   local file="${TAP_DIR:-../homebrew-tap}/Casks/orbit-calendar.rb"
   [[ -f "$file" ]] || { echo "No cask at $file. Set TAP_DIR to your homebrew-tap checkout."; exit 1; }
