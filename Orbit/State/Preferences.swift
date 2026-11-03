@@ -128,7 +128,7 @@ final class Preferences {
         textSize = Self.value(defaults, Key.textSize, default: .standard)
         calendarDensity = Self.value(defaults, Key.calendarDensity, default: .compact)
         eventDensity = Self.value(defaults, Key.eventDensity, default: .compact)
-        eventsView = Self.value(defaults, Key.eventsView, default: .agenda)
+        eventsView = Self.value(defaults, Key.eventsView, default: .day)
         agendaDayCount = min(max(defaults.integer(forKey: Key.agendaDayCount), 1), Self.maxAgendaDayCount)
         hideEmptyDays = defaults.bool(forKey: Key.hideEmptyDays)
         hideAllDayEvents = defaults.bool(forKey: Key.hideAllDayEvents)

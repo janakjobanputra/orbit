@@ -54,7 +54,7 @@ Run everything with `make test`. To look at the rendered popovers, run the tests
 
 | Setting | Options | Checked by | Result |
 |---|---|---|---|
-| Events view | Agenda, Day | Behaviour (`DayTimelineTests`: layout, overlaps, midnight, saved choice), Render (`testDayView`) | pass |
+| Events view | Day (default), Agenda | Behaviour (`DayTimelineTests`: layout, overlaps, midnight, saved choice), Render (`testDayView`) | pass |
 | Text size | Small, Default, Large, XL | Render (each draws differently; popover width is 270, 300, 336, 375 pt) | pass |
 | Calendar spacing | Compact, Cozy, Airy | Behaviour (`testDensityOptionsGrowInOrder`), Render | pass |
 | Events spacing | Compact, Cozy, Airy | Behaviour, Render | pass |

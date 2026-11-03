@@ -79,6 +79,8 @@ enum StateFixture {
     ) async -> (state: AppState, store: FakeEventStore, clock: TestClock) {
         let defaults = UserDefaults(suiteName: "OrbitTests-\(UUID().uuidString)")!
         let preferences = Preferences(defaults: defaults)
+        // Most tests check the agenda; the Day view tests switch to it themselves.
+        preferences.eventsView = .agenda
         let store = FakeEventStore()
         store.calendarList = [calendarInfo("work"), calendarInfo("home")]
         configure(store, preferences)

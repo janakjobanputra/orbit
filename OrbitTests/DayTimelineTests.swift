@@ -75,10 +75,10 @@ final class DayTimelineTests: XCTestCase {
     }
 
     @MainActor
-    func testEventsViewIsSavedAndDefaultsToAgenda() {
+    func testEventsViewIsSavedAndDefaultsToDay() {
         let defaults = UserDefaults(suiteName: "OrbitEventsView-\(UUID().uuidString)")!
+        XCTAssertEqual(Preferences(defaults: defaults).eventsView, .day, "A fresh install opens on the Day view")
+        Preferences(defaults: defaults).eventsView = .agenda
         XCTAssertEqual(Preferences(defaults: defaults).eventsView, .agenda)
-        Preferences(defaults: defaults).eventsView = .day
-        XCTAssertEqual(Preferences(defaults: defaults).eventsView, .day)
     }
 }
