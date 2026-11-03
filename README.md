@@ -1,6 +1,6 @@
 # Orbit
 
-Your whole day, one click away in the menu bar.
+Your whole day, one click away in the menu bar. [try-orbit.app](https://try-orbit.app)
 
 Native Swift, a few MB, reads your Mac calendar. No account, no subscription, no Electron, nothing leaves your Mac. I built this because I wanted my next meeting and my week a click away, without paying monthly for a calendar app or signing into yet another service.
 

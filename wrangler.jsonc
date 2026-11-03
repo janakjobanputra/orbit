@@ -1,0 +1,12 @@
+// Cloudflare deploys the website in site/ from this repo on every push to main.
+{
+  "name": "orbit",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./site"
+  },
+  "routes": [
+    { "pattern": "try-orbit.app", "custom_domain": true },
+    { "pattern": "www.try-orbit.app", "custom_domain": true }
+  ]
+}
