@@ -1,3 +1,13 @@
+<p align="center">
+  <img width="160" height="160" src="docs/images/logo.svg" alt="Orbit logo">
+</p>
+<p align="center">
+  <a href="https://github.com/janakjobanputra/orbit/releases/latest"><img src="https://img.shields.io/github/v/release/janakjobanputra/orbit?label=download&color=16A8C4" alt="Download"></a>
+  <img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg" alt="Platform: macOS">
+  <img src="https://img.shields.io/badge/requires-macOS%2026+-ff69b4.svg" alt="Requires macOS 26 or later">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License: GPL-3.0"></a>
+</p>
+
 # Orbit
 
 Your whole day, one click away in the menu bar. [try-orbit.app](https://try-orbit.app)
