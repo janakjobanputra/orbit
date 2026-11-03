@@ -33,10 +33,13 @@ private struct AgendaSection: View {
         let timed = rows.filter { !$0.isAllDay }
         Section {
             VStack(alignment: .leading, spacing: spacing) {
-                if day.events.isEmpty && !rows.contains(where: { if case .free = $0 { true } else { false } }) {
-                    Text("No events")
-                        .orbitFont(.callout)
-                        .foregroundStyle(.tertiary)
+                if day.hasNothingLeft(now: appState.now) {
+                    ForEach(timed) { row in
+                        if case .event(let event) = row { EventRowView(event: event) }
+                    }
+                    placeholder("No events left today")
+                } else if day.events.isEmpty && !rows.contains(where: { if case .free = $0 { true } else { false } }) {
+                    placeholder("No events")
                 } else {
                     ForEach(timed) { row in
                         switch row {
@@ -67,14 +70,20 @@ private struct AgendaSection: View {
             .padding(.top, 10)
             .padding(.bottom, allDay.isEmpty ? 4 : 7)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Opaque enough that timed events scrolling underneath don't show through.
-            .background(.bar)
+            // Opaque, so timed events scrolling underneath don't show through.
+            .background(Color.orbitPopoverBackground)
             .overlay(alignment: .bottom) {
                 if !allDay.isEmpty {
                     Divider()
                 }
             }
         }
+    }
+
+    private func placeholder(_ text: String) -> some View {
+        Text(text)
+            .orbitFont(.callout)
+            .foregroundStyle(.tertiary)
     }
 
     // Text(_:format:) formats in the environment's time zone, like the rest of the popover.

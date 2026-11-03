@@ -69,3 +69,35 @@ final class ClockTickTests: XCTestCase {
         XCTAssertEqual(AppState.nextTick(after: at(9, 47, 12), showsSeconds: true), at(9, 47, 13))
     }
 }
+
+final class NothingLeftTodayTests: XCTestCase {
+
+    private let now = TestSupport.date(2026, 10, 31, 15)
+
+    private func day(_ kind: AgendaDay.Kind, _ events: [CalendarEvent]) -> AgendaDay {
+        AgendaDay(date: TestSupport.date(2026, 10, 31), kind: kind, events: events)
+    }
+
+    func testTodayWithOnlyFinishedEventsHasNothingLeft() {
+        let lunch = TestSupport.event("Lunch", start: TestSupport.date(2026, 10, 31, 12), minutes: 60)
+        XCTAssertTrue(day(.today, [lunch]).hasNothingLeft(now: now))
+        XCTAssertTrue(day(.today, []).hasNothingLeft(now: now))
+    }
+
+    func testAllDayEventsDontCountAsUpNext() {
+        let holiday = TestSupport.event("Halloween", start: TestSupport.date(2026, 10, 31), minutes: 24 * 60, isAllDay: true)
+        XCTAssertTrue(day(.today, [holiday]).hasNothingLeft(now: now))
+    }
+
+    func testEventInProgressOrLaterMeansSomethingIsLeft() {
+        let call = TestSupport.event("Call", start: TestSupport.date(2026, 10, 31, 14, 30), minutes: 60)
+        let dinner = TestSupport.event("Dinner", start: TestSupport.date(2026, 10, 31, 19), minutes: 60)
+        XCTAssertFalse(day(.today, [call]).hasNothingLeft(now: now))
+        XCTAssertFalse(day(.today, [dinner]).hasNothingLeft(now: now))
+    }
+
+    func testOnlyAppliesToToday() {
+        XCTAssertFalse(day(.tomorrow, []).hasNothingLeft(now: now))
+        XCTAssertFalse(day(.other, []).hasNothingLeft(now: now))
+    }
+}

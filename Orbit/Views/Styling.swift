@@ -59,4 +59,7 @@ extension NSColor {
 extension Color {
     /// Orbit's accent everywhere, instead of the system accent color.
     static let orbitTeal = Color(nsColor: .orbitTeal)
+    /// The popover's solid background. The pinned day headers use it too, so they match the rest of the popover
+    /// while hiding the events that scroll underneath.
+    static let orbitPopoverBackground = Color(nsColor: .windowBackgroundColor)
 }

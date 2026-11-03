@@ -11,6 +11,11 @@ struct AgendaDay: Identifiable, Hashable, Sendable {
     let events: [CalendarEvent]
 
     var id: Date { date }
+
+    /// Today, with nothing timed still in progress or to come.
+    func hasNothingLeft(now: Date) -> Bool {
+        kind == .today && !events.contains { !$0.isAllDay && $0.end > now }
+    }
 }
 
 enum AgendaRow: Hashable, Identifiable, Sendable {

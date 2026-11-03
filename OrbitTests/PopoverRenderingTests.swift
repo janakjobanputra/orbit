@@ -231,6 +231,23 @@ final class PopoverRenderingTests: XCTestCase {
         XCTAssertGreaterThan(rep.pixelsHigh, 100)
     }
 
+    /// Late in the day, today says there's nothing left instead of ending on a finished event.
+    func testNothingLeftToday() async {
+        let state = await StateFixture.make(at: at(21)) { store, _ in
+            store.add(CalendarEvent(
+                id: "halloween", title: "Halloween", start: TestSupport.date(2026, 10, 31), end: TestSupport.date(2026, 11, 1),
+                isAllDay: true, calendarID: "work", color: EventColor(red: 0.9, green: 0.3, blue: 0.7), location: nil, meetingURL: nil
+            ))
+            store.add(TestSupport.event("Movie", start: at(19), minutes: 90))
+            store.add(TestSupport.event("Brunch", start: at(11, day: 1), minutes: 60))
+        }.state
+        state.preferences.showMonthGrid = false
+        XCTAssertTrue(state.agendaDays[0].hasNothingLeft(now: state.now))
+        for scheme in [ColorScheme.light, .dark] {
+            attach(render(state, scheme: scheme), "Nothing left today (\(scheme == .light ? "light" : "dark"))")
+        }
+    }
+
     /// A newer release adds a Download row at the bottom of the calendar.
     func testUpdateBanner() async {
         let release = ReleaseInfo(

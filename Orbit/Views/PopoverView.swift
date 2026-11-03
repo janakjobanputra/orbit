@@ -22,6 +22,7 @@ struct PopoverView: View {
         .frame(width: 300 * appState.preferences.textSize.scale)
         .environment(\.textScale, appState.preferences.textSize.scale)
         .tint(.orbitTeal)
+        .background(Color.orbitPopoverBackground)
         .background { shortcuts }
     }
 

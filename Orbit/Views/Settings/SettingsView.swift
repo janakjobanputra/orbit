@@ -121,7 +121,7 @@ private struct SettingsPreview: View {
                 if let demo {
                     let available = max(geometry.size.height - 16, 1)
                     let scale = naturalHeight > available ? available / naturalHeight : 1
-                    preview(demo)
+                    preview(demo, scheme: previewScheme)
                         // Lay out at full natural height, measure it, then shrink the drawing only if needed.
                         .fixedSize(horizontal: false, vertical: true)
                         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { naturalHeight = $0 }
@@ -149,7 +149,7 @@ private struct SettingsPreview: View {
         .onDisappear { demo?.stop() }
     }
 
-    private func preview(_ demo: AppState) -> some View {
+    private func preview(_ demo: AppState, scheme: ColorScheme) -> some View {
         VStack(alignment: .trailing, spacing: 8) {
             Text(demo.menuBarTitle)
                 .font(.system(size: NSFont.systemFontSize).monospacedDigit())
@@ -160,7 +160,13 @@ private struct SettingsPreview: View {
                 .glassEffect(.regular, in: .capsule)
             // The same view the popover shows, so size and content always match.
             PopoverView(openSettings: {})
-                .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                .clipShape(.rect(cornerRadius: 16))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(Color.primary.opacity(scheme == .dark ? 0.16 : 0.08), lineWidth: 0.5)
+                }
+                // A shadow strong enough to lift the preview off the backdrop in both light and dark.
+                .shadow(color: .black.opacity(scheme == .dark ? 0.55 : 0.22), radius: 16, y: 6)
         }
         .frame(width: 300 * demo.preferences.textSize.scale)
     }
