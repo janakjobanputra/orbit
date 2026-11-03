@@ -1,4 +1,4 @@
-.PHONY: generate build test run clean dmg testflight
+.PHONY: generate build test run clean dmg testflight cask
 
 generate:
 	xcodegen generate
@@ -22,3 +22,6 @@ dmg:
 
 testflight:
 	scripts/release.sh testflight
+
+cask:
+	scripts/release.sh cask

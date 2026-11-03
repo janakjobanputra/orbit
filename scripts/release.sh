@@ -2,6 +2,7 @@
 # Builds Orbit for release.
 #   scripts/release.sh dmg         Developer ID–signed, notarized dist/Orbit-<version>.dmg
 #   scripts/release.sh testflight  Uploads a build to App Store Connect for TestFlight
+#   scripts/release.sh cask        Points the Homebrew cask at the DMG built by `dmg`
 # One-time account setup is in docs/RELEASING.md.
 set -euo pipefail
 cd "${0:A:h}/.."
@@ -72,6 +73,17 @@ dmg() {
   echo "Built $dmg (and $DIST/Orbit.dmg for the website's latest link)"
 }
 
+cask() {
+  local dmg="$DIST/Orbit-$VERSION.dmg"
+  [[ -f "$dmg" ]] || { echo "No $dmg. Run make dmg first."; exit 1; }
+  local file="${TAP_DIR:-../homebrew-tap}/Casks/orbit-calendar.rb"
+  [[ -f "$file" ]] || { echo "No cask at $file. Set TAP_DIR to your homebrew-tap checkout."; exit 1; }
+  local sha
+  sha=$(shasum -a 256 "$dmg" | awk '{print $1}')
+  sed -i '' -e "s/^  version \".*\"/  version \"$VERSION\"/" -e "s/^  sha256 \".*\"/  sha256 \"$sha\"/" "$file"
+  echo "Updated $file to $VERSION ($sha). Commit and push the tap once the GitHub release is published."
+}
+
 testflight() {
   archive
   export_archive app-store-connect upload
@@ -82,5 +94,6 @@ case "${1:-}" in
   archive) archive ;;
   dmg) dmg ;;
   testflight) testflight ;;
-  *) echo "Usage: scripts/release.sh archive|dmg|testflight"; exit 2 ;;
+  cask) cask ;;
+  *) echo "Usage: scripts/release.sh archive|dmg|testflight|cask"; exit 2 ;;
 esac
