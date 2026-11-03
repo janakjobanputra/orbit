@@ -16,6 +16,14 @@ final class MenuBarFormatterTests: XCTestCase {
         TestSupport.event("Standup", start: now.addingTimeInterval(minutes * 60), minutes: 15)
     }
 
+    func testIconStyleShowsNoText() {
+        let icon = formatter(.icon) { $0.timePattern = "h:mm:ss" }
+        XCTAssertEqual(icon.title(now: now, events: [standup(inMinutes: 5)]), "")
+        XCTAssertTrue(icon.format.isIconOnly)
+        XCTAssertFalse(icon.format.showsSeconds, "Nothing ticks when only the logo shows")
+        XCTAssertFalse(formatter(.classic).format.isIconOnly)
+    }
+
     func testClassicShowsDateAndTime() {
         XCTAssertEqual(formatter(.classic).title(now: now, events: []), "Sat, Oct 31 · 9:47")
     }
@@ -106,6 +114,12 @@ final class MenuBarFormatTests: XCTestCase {
         format.setUses24HourTime(false)
         XCTAssertEqual(format.timePattern, "hh:mm")
         XCTAssertFalse(format.uses24HourTime)
+    }
+
+    func testIconStyleRoundTripsThroughJSON() throws {
+        var format = MenuBarFormat()
+        format.preset = .icon
+        XCTAssertEqual(try JSONDecoder().decode(MenuBarFormat.self, from: JSONEncoder().encode(format)).preset, .icon)
     }
 
     func testPresetsChooseTokens() {

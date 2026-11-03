@@ -43,7 +43,7 @@ brew install --cask janakjobanputra/tap/orbit-calendar
 
 ## What it does
 
-The menu bar shows the date, the time, or your next meeting. Click it and you get your month and the days ahead.
+The menu bar shows the date, the time, your next meeting, or just Orbit's logo. Click it and you get your month and the days ahead.
 
 - A Day view of today (or any date you pick) hour by hour, like Calendar, with overlapping meetings side by side and a line at the current time.
 - Or, set in Settings, an agenda of the days ahead. Each day's all-day events stay pinned at the top while you scroll through it.

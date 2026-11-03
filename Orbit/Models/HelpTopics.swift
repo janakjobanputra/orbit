@@ -37,12 +37,12 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .menuBar,
             question: "I can't see Orbit in my menu bar.",
-            answer: "On a MacBook with a notch, items that don't fit are hidden behind it. ⌘-drag a few other icons off the menu bar, or pick a shorter style under Display › Menu bar. Also check System Settings › Menu Bar › Allow in the Menu Bar, and make sure Orbit is turned on there."
+            answer: "On a MacBook with a notch, items that don't fit are hidden behind it. ⌘-drag a few other icons off the menu bar, or choose the Icon style under Display › Menu bar so Orbit takes up the least room. Also check System Settings › Menu Bar › Allow in the Menu Bar, and make sure Orbit is turned on there."
         ),
         HelpTopic(
             group: .menuBar,
-            question: "How do I show seconds, the week number or my next meeting?",
-            answer: "Choose a style under Display › Menu bar, or pick Custom to choose and order the items yourself. Add :ss to the time format to show seconds."
+            question: "What can Orbit show in the menu bar?",
+            answer: "Choose a style under Display › Menu bar: the date and time, just the time, your next meeting, all three, or Icon for only Orbit's logo. Custom lets you choose and order the items yourself, including the week number. Add :ss to the time format to show seconds."
         ),
 
         // Calendar and events

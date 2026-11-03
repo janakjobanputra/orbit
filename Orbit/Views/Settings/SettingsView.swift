@@ -155,13 +155,21 @@ private struct SettingsPreview: View {
 
     private func preview(_ demo: AppState, scheme: ColorScheme) -> some View {
         VStack(alignment: .trailing, spacing: 8) {
-            Text(demo.menuBarTitle)
-                .font(.system(size: NSFont.systemFontSize).monospacedDigit())
-                .lineLimit(1)
-                .fixedSize()
-                .padding(.horizontal, 10)
-                .padding(.vertical, 3)
-                .glassEffect(.regular, in: .capsule)
+            Group {
+                if demo.preferences.menuBarFormat.isIconOnly {
+                    Image(nsImage: MenuBarIcon.image)
+                        .renderingMode(.template)
+                        .foregroundStyle(.primary)
+                } else {
+                    Text(demo.menuBarTitle)
+                        .font(.system(size: NSFont.systemFontSize).monospacedDigit())
+                        .lineLimit(1)
+                        .fixedSize()
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 3)
+            .glassEffect(.regular, in: .capsule)
             // The same view the popover shows, so size and content always match.
             PopoverView(openSettings: {})
                 .clipShape(.rect(cornerRadius: 16))

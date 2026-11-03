@@ -25,7 +25,7 @@ enum MenuBarToken: String, Codable, CaseIterable, Identifiable, Sendable {
 }
 
 enum MenuBarPreset: String, Codable, CaseIterable, Identifiable, Sendable {
-    case classic, minimal, agenda, info, custom
+    case classic, minimal, agenda, info, icon, custom
 
     var id: String { rawValue }
 
@@ -38,6 +38,7 @@ enum MenuBarPreset: String, Codable, CaseIterable, Identifiable, Sendable {
         case .minimal: [.time]
         case .agenda: [.nextEvent]
         case .info: [.date, .time, .nextEvent]
+        case .icon: []
         case .custom: nil
         }
     }
@@ -92,6 +93,9 @@ struct MenuBarFormat: Codable, Equatable, Sendable {
     var tokens: [MenuBarToken] { preset.tokens ?? customTokens }
 
     var uses24HourTime: Bool { timePattern.contains("H") }
+
+    /// The Icon style: just Orbit's logo, no text.
+    var isIconOnly: Bool { preset == .icon }
 
     /// Whether the title includes seconds, so the clock has to tick every second.
     var showsSeconds: Bool {

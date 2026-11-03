@@ -27,7 +27,7 @@ Run everything with `make test`. To look at the rendered popovers, run the tests
 
 | Setting | Options | Checked by | Result |
 |---|---|---|---|
-| Style | Classic, Minimal, Agenda (and its fallback), Info, Custom | Behaviour (`testPreset*`) | pass |
+| Style | Classic, Minimal, Agenda (and its fallback), Info, Icon, Custom | Behaviour (`testPreset*`, `testIconStyleShowsNoText`) | pass |
 | Custom items | Date, Time, Next Event, Week Number, any order, none | Behaviour (`testCustomTokensEachRender`, `testCustomWithNoTokensFallsBackToDateAndTime`) | pass |
 | Date format | every preset pattern | Behaviour (`testEveryDateFormatRendersDifferently`) | pass |
 | Time format | free text, e.g. `h:mm a` | Behaviour (`testTimeFormatAnd24HourClock`) | pass |

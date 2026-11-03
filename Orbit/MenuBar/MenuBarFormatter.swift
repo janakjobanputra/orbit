@@ -10,6 +10,7 @@ struct MenuBarFormatter {
     var calendar: Calendar = .autoupdatingCurrent
 
     func title(now: Date, events: [CalendarEvent]) -> String {
+        if format.isIconOnly { return "" }
         let parts = format.tokens.compactMap { text(for: $0, now: now, events: events) }
         // A title that would be empty (e.g. Agenda with nothing coming up) falls back to date and time.
         guard !parts.isEmpty else {

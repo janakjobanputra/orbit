@@ -168,6 +168,15 @@ final class MenuBarSettingsTests: XCTestCase {
         XCTAssertEqual(state.menuBarTitle, "Sat, Oct 31 · 9:47")
     }
 
+    func testPresetIcon() async {
+        let state = await state(withEventIn: 10)
+        state.preferences.menuBarFormat.preset = .icon
+        XCTAssertEqual(state.menuBarTitle, "")
+        let image = MenuBarIcon.image
+        XCTAssertTrue(image.isTemplate, "Tinted by macOS to match the menu bar, light or dark")
+        XCTAssertEqual(image.size.height, 18)
+    }
+
     func testPresetInfo() async {
         let state = await state(withEventIn: 10)
         state.preferences.menuBarFormat.preset = .info

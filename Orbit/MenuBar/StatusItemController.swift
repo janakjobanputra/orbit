@@ -43,7 +43,10 @@ final class StatusItemController: NSObject {
     /// Re-renders the title whenever any state it reads changes.
     private func updateTitle() {
         withObservationTracking {
+            let isIconOnly = appState.preferences.menuBarFormat.isIconOnly
+            statusItem.button?.image = isIconOnly ? MenuBarIcon.image : nil
             statusItem.button?.title = appState.menuBarTitle
+            statusItem.button?.setAccessibilityLabel(isIconOnly ? "Orbit" : nil)
         } onChange: { [weak self] in
             Task { @MainActor in self?.updateTitle() }
         }
