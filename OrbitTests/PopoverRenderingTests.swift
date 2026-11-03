@@ -438,6 +438,21 @@ final class PopoverRenderingTests: XCTestCase {
         }
     }
 
+    /// Settings › Help with a couple of answers open.
+    func testHelpPane() async {
+        let state = await makeState()
+        let root = HelpSettingsTab()
+            .environment(state)
+            .frame(width: 600, height: 900)
+        let host = NSHostingView(rootView: root)
+        host.frame.size = CGSize(width: 600, height: 900)
+        let window = NSWindow(contentRect: host.frame, styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = host
+        let rep = snapshot(host)
+        attach(rep, "Help pane")
+        XCTAssertGreaterThan(rep.pixelsHigh, 100)
+    }
+
     /// Every option that adds height, at once: the Settings preview must still fit its panel.
     func testSettingsPreviewFitsWithEverythingOn() async {
         let state = await makeState()

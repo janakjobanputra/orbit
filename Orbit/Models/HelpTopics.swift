@@ -1,0 +1,109 @@
+import Foundation
+
+/// The questions answered in Settings › Help, grouped as they appear there.
+struct HelpTopic: Identifiable, Hashable {
+
+    enum Group: String, CaseIterable, Identifiable {
+        case menuBar = "Menu bar"
+        case calendar = "Calendar and events"
+        case meetings = "Meetings"
+        case appAndPrivacy = "Orbit itself"
+
+        var id: Self { self }
+    }
+
+    let group: Group
+    let question: String
+    let answer: String
+
+    var id: String { question }
+
+    static func topics(in group: Group) -> [HelpTopic] {
+        all.filter { $0.group == group }
+    }
+
+    static let all: [HelpTopic] = [
+        // Menu bar
+        HelpTopic(
+            group: .menuBar,
+            question: "My menu bar already shows the date and time. Can I hide them?",
+            answer: "macOS can't remove its clock entirely, but you can make it tiny. Open System Settings › Menu Bar, click Clock Options, then set Show date to Never, or choose the Analog style for a small clock icon with no date or day. Orbit can show the date and time in any format you like under Display › Menu bar."
+        ),
+        HelpTopic(
+            group: .menuBar,
+            question: "How do I move Orbit around in the menu bar?",
+            answer: "Hold ⌘ and drag Orbit, or any other menu bar icon, left or right, then let go. Drag it next to the clock if you want it where the date used to be. Control Center always stays at the far right."
+        ),
+        HelpTopic(
+            group: .menuBar,
+            question: "I can't see Orbit in my menu bar.",
+            answer: "On a MacBook with a notch, items that don't fit are hidden behind it. ⌘-drag a few other icons off the menu bar, or pick a shorter style under Display › Menu bar. Also check System Settings › Menu Bar › Allow in the Menu Bar, and make sure Orbit is turned on there."
+        ),
+        HelpTopic(
+            group: .menuBar,
+            question: "How do I show seconds, the week number or my next meeting?",
+            answer: "Choose a style under Display › Menu bar, or pick Custom to choose and order the items yourself. Add :ss to the time format to show seconds."
+        ),
+
+        // Calendar and events
+        HelpTopic(
+            group: .calendar,
+            question: "Why don't I see my events?",
+            answer: "Orbit shows the calendars your Mac syncs in Apple Calendar. Add Google, Exchange or other accounts in System Settings › Internet Accounts, then turn their calendars on under Calendars. If none appear at all, allow Orbit in System Settings › Privacy & Security › Calendars."
+        ),
+        HelpTopic(
+            group: .calendar,
+            question: "How do I switch between the Day view and the agenda?",
+            answer: "Use Display › Layout › Events view. Day shows the selected date hour by hour; Agenda lists the days ahead. Click any date in the month to see that day."
+        ),
+        HelpTopic(
+            group: .calendar,
+            question: "How do I add, edit or delete an event?",
+            answer: "Click + in the calendar, or press ⌘N, to add one. Click an event for its details, where you can delete it or choose Open in Calendar to edit it there. Events on read-only calendars, such as holidays, can't be deleted."
+        ),
+        HelpTopic(
+            group: .calendar,
+            question: "Which calendar do new events go to?",
+            answer: "The one chosen under Calendars › Default calendar. Leave it on System default to use the same one as Apple Calendar."
+        ),
+        HelpTopic(
+            group: .calendar,
+            question: "Can I hide some calendars or events?",
+            answer: "Turn calendars off under Calendars › Show calendars. To hide individual events, add words from their titles to Calendars › Event filters. Display › Layout can also hide all-day or past events."
+        ),
+        HelpTopic(
+            group: .calendar,
+            question: "What keyboard shortcuts are there?",
+            answer: "Anywhere: ⇧⌘C opens the calendar and ⇧⌘J joins your next meeting (change them under General › Shortcuts). With the calendar open: ⌘N new event, ⌘F search, ⌘M show or hide the month, ⌘T today, ⌘, Settings, and Esc to step back out."
+        ),
+
+        // Meetings
+        HelpTopic(
+            group: .meetings,
+            question: "How do I join a meeting?",
+            answer: "The meeting you're in, or one starting within 10 minutes, shows a Join button in the calendar. You can also click any event and choose Join, or press ⇧⌘J from anywhere."
+        ),
+        HelpTopic(
+            group: .meetings,
+            question: "Why doesn't a meeting have a Join button?",
+            answer: "Orbit looks for Zoom, Google Meet, Teams, Webex and other video links in the event's URL, location and notes. If your service isn't recognised, add its domain under General › Custom video services."
+        ),
+
+        // Orbit itself
+        HelpTopic(
+            group: .appAndPrivacy,
+            question: "Does Orbit send my calendar anywhere?",
+            answer: "No. Orbit reads your events on your Mac and has no account, server or analytics. The only thing it fetches is a once-a-day check on GitHub for a new version, which you can turn off under General › Updates."
+        ),
+        HelpTopic(
+            group: .appAndPrivacy,
+            question: "How do I update Orbit?",
+            answer: "Orbit tells you when a new version is out, with a Download button at the bottom of the calendar. You can also check under About. If you installed it with Homebrew, run brew upgrade."
+        ),
+        HelpTopic(
+            group: .appAndPrivacy,
+            question: "How do I start Orbit at login, or quit it?",
+            answer: "Turn on General › Startup › Launch at login. To quit, right-click Orbit in the menu bar and choose Quit Orbit."
+        ),
+    ]
+}

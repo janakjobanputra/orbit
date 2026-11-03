@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, display, calendars, about
+    case general, display, calendars, help, about
 
     var id: Self { self }
 
@@ -10,6 +10,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "General"
         case .display: "Display"
         case .calendars: "Calendars"
+        case .help: "Help"
         case .about: "About"
         }
     }
@@ -19,6 +20,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "gearshape.fill"
         case .display: "menubar.rectangle"
         case .calendars: "calendar"
+        case .help: "questionmark"
         case .about: "info"
         }
     }
@@ -28,6 +30,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: .gray
         case .display: .blue
         case .calendars: .red
+        case .help: .orange
         case .about: .indigo
         }
     }
@@ -60,6 +63,7 @@ struct SettingsView: View {
                 case .general: GeneralSettingsTab()
                 case .display: DisplaySettingsTab()
                 case .calendars: CalendarsSettingsTab()
+                case .help: HelpSettingsTab()
                 case .about: AboutSettingsTab()
                 }
             }
