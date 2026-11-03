@@ -31,6 +31,7 @@ final class Preferences {
         static let calendarDensity = "calendarDensity"
         static let eventDensity = "eventDensity"
         static let agendaDayCount = "agendaDayCount"
+        static let eventsView = "eventsView"
         static let hideEmptyDays = "hideEmptyDays"
         static let hideAllDayEvents = "hideAllDayEvents"
         static let hidePastEvents = "hidePastEvents"
@@ -74,6 +75,8 @@ final class Preferences {
     var textSize: TextSize { didSet { defaults.set(textSize.rawValue, forKey: Key.textSize) } }
     var calendarDensity: Density { didSet { defaults.set(calendarDensity.rawValue, forKey: Key.calendarDensity) } }
     var eventDensity: Density { didSet { defaults.set(eventDensity.rawValue, forKey: Key.eventDensity) } }
+    /// Agenda of the days ahead, or the selected day as a timeline.
+    var eventsView: EventsView { didSet { defaults.set(eventsView.rawValue, forKey: Key.eventsView) } }
     /// How many days ahead the agenda list looks.
     var agendaDayCount: Int { didSet { defaults.set(agendaDayCount, forKey: Key.agendaDayCount) } }
     var hideEmptyDays: Bool { didSet { defaults.set(hideEmptyDays, forKey: Key.hideEmptyDays) } }
@@ -125,6 +128,7 @@ final class Preferences {
         textSize = Self.value(defaults, Key.textSize, default: .standard)
         calendarDensity = Self.value(defaults, Key.calendarDensity, default: .compact)
         eventDensity = Self.value(defaults, Key.eventDensity, default: .compact)
+        eventsView = Self.value(defaults, Key.eventsView, default: .agenda)
         agendaDayCount = min(max(defaults.integer(forKey: Key.agendaDayCount), 1), Self.maxAgendaDayCount)
         hideEmptyDays = defaults.bool(forKey: Key.hideEmptyDays)
         hideAllDayEvents = defaults.bool(forKey: Key.hideAllDayEvents)

@@ -37,6 +37,10 @@ struct DisplaySettingsTab: View {
             }
 
             Section("Layout") {
+                Picker("Events view", selection: $preferences.eventsView) {
+                    ForEach(EventsView.allCases) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.segmented)
                 Picker("Text size", selection: $preferences.textSize) {
                     ForEach(TextSize.allCases) { Text($0.label).tag($0) }
                 }
@@ -49,12 +53,14 @@ struct DisplaySettingsTab: View {
                     ForEach(Density.allCases) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                Picker("Agenda days", selection: $preferences.agendaDayCount) {
-                    ForEach(Preferences.agendaDayOptions, id: \.self) { count in
-                        Text(count == 1 ? "1 day" : "\(count) days").tag(count)
+                if preferences.eventsView == .agenda {
+                    Picker("Agenda days", selection: $preferences.agendaDayCount) {
+                        ForEach(Preferences.agendaDayOptions, id: \.self) { count in
+                            Text(count == 1 ? "1 day" : "\(count) days").tag(count)
+                        }
                     }
+                    Toggle("Hide empty days", isOn: $preferences.hideEmptyDays)
                 }
-                Toggle("Hide empty days", isOn: $preferences.hideEmptyDays)
                 Toggle("Hide all-day events", isOn: $preferences.hideAllDayEvents)
                 Toggle("Hide past events", isOn: $preferences.hidePastEvents)
             }

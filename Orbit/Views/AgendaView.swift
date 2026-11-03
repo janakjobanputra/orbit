@@ -156,26 +156,7 @@ struct EventRowView: View {
                 compactRow
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture { appState.detailEventID = event.id }
-        .popover(isPresented: isShowingDetails, arrowEdge: .leading) {
-            EventDetailView(event: event)
-                .environment(appState)
-                .environment(\.timeZone, timeZone)
-                .environment(\.textScale, scale)
-        }
-        .accessibilityAddTraits(.isButton)
-        .accessibilityHint("Shows details")
-    }
-
-    /// Kept in AppState so Escape can close the detail before the popover, and opening another event swaps it.
-    private var isShowingDetails: Binding<Bool> {
-        Binding(
-            get: { appState.detailEventID == event.id },
-            set: { isShown in
-                if !isShown, appState.detailEventID == event.id { appState.detailEventID = nil }
-            }
-        )
+        .opensDetails(of: event)
     }
 
     private var singleLineRow: some View {
@@ -404,5 +385,44 @@ extension FormatStyle where Self == Date.IntervalFormatStyle {
     /// "9:00 – 11:00 AM". Interval styles don't pick up the view's time zone on their own.
     static func timeRange(in timeZone: TimeZone) -> Self {
         Date.IntervalFormatStyle(timeZone: timeZone).hour().minute()
+    }
+}
+
+/// Clicking the view opens the event's details in a popover beside it.
+private struct EventDetailsOnClick: ViewModifier {
+
+    @Environment(AppState.self) private var appState
+    @Environment(\.timeZone) private var timeZone
+    @Environment(\.textScale) private var scale
+    let event: CalendarEvent
+
+    func body(content: Content) -> some View {
+        content
+            .contentShape(Rectangle())
+            .onTapGesture { appState.detailEventID = event.id }
+            .popover(isPresented: isShowingDetails, arrowEdge: .leading) {
+                EventDetailView(event: event)
+                    .environment(appState)
+                    .environment(\.timeZone, timeZone)
+                    .environment(\.textScale, scale)
+            }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint("Shows details")
+    }
+
+    /// Kept in AppState so Escape can close the detail before the popover, and opening another event swaps it.
+    private var isShowingDetails: Binding<Bool> {
+        Binding(
+            get: { appState.detailEventID == event.id },
+            set: { isShown in
+                if !isShown, appState.detailEventID == event.id { appState.detailEventID = nil }
+            }
+        )
+    }
+}
+
+extension View {
+    func opensDetails(of event: CalendarEvent) -> some View {
+        modifier(EventDetailsOnClick(event: event))
     }
 }

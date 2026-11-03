@@ -97,7 +97,10 @@ struct CalendarPanel: View {
                 .padding(.bottom, 12)
             }
             Divider()
-            AgendaListView()
+            switch preferences.eventsView {
+            case .agenda: AgendaListView()
+            case .day: DayTimelineView()
+            }
             if hasProgress {
                 Divider()
                 VStack(spacing: 10) {

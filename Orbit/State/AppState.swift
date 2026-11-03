@@ -130,6 +130,11 @@ final class AppState {
         }
     }
 
+    /// The selected day for the Day view, with every event that day, finished or not.
+    var dayTimeline: DayTimeline {
+        DayTimeline(events: Agenda.deduplicated(visible(agendaEvents)), day: selectedDate, calendar: calendar)
+    }
+
     func agendaRows(for day: AgendaDay) -> [AgendaRow] {
         let gaps = preferences.showFreeTime
             ? BusyTime.freeGaps(in: day.events, on: day.date, now: now, calendar: calendar)

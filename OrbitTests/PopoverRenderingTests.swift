@@ -231,6 +231,32 @@ final class PopoverRenderingTests: XCTestCase {
         XCTAssertGreaterThan(rep.pixelsHigh, 100)
     }
 
+    /// The Day view: all-day events on top, overlapping meetings side by side, and a line at the current time.
+    func testDayView() async {
+        let state = await StateFixture.make(at: at(10, 40)) { store, preferences in
+            let blue = EventColor(red: 0.22, green: 0.52, blue: 0.98), green = EventColor(red: 0.2, green: 0.7, blue: 0.42)
+            @MainActor func add(_ title: String, _ start: Date, _ end: Date, _ color: EventColor, allDay: Bool = false) {
+                store.add(CalendarEvent(
+                    id: title, title: title, start: start, end: end, isAllDay: allDay,
+                    calendarID: "work", color: color, location: nil, meetingURL: nil
+                ))
+            }
+            add("Halloween", TestSupport.date(2026, 10, 31), TestSupport.date(2026, 11, 1), EventColor(red: 0.9, green: 0.3, blue: 0.7), allDay: true)
+            add("Standup", at(9), at(9, 30), blue)
+            add("Design review", at(10, 15), at(11), blue)
+            add("Coffee with Priya", at(10, 30), at(11, 15), green)
+            add("Focus time", at(11, 30), at(13), blue)
+            preferences.eventsView = .day
+        }.state
+        state.preferences.showMonthGrid = false
+        XCTAssertEqual(state.dayTimeline.blocks.count, 4)
+        for scheme in [ColorScheme.light, .dark] {
+            let rep = render(state, scheme: scheme)
+            attach(rep, "Day view (\(scheme == .light ? "light" : "dark"))")
+            XCTAssertGreaterThan(rep.pixelsHigh, 300)
+        }
+    }
+
     /// Late in the day, today says there's nothing left instead of ending on a finished event.
     func testNothingLeftToday() async {
         let state = await StateFixture.make(at: at(21)) { store, _ in
