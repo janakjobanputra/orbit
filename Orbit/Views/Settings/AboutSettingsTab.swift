@@ -21,6 +21,8 @@ struct AboutSettingsTab: View {
             Text(version)
                 .font(.callout.monospaced())
                 .foregroundStyle(.tertiary)
+            UpdateStatusView()
+                .padding(.top, 4)
             Text("Free and open source under the GPL-3.0.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -30,5 +32,45 @@ struct AboutSettingsTab: View {
                 .foregroundStyle(Color.orbitTeal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct UpdateStatusView: View {
+
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        let updates = appState.updates
+        VStack(spacing: 8) {
+            if let release = updates.availableRelease {
+                Text("Orbit \(release.version.description) is available")
+                    .font(.callout.weight(.semibold))
+                HStack(spacing: 12) {
+                    Button("Download") { NSWorkspace.shared.open(release.bestURL) }
+                        .buttonStyle(.borderedProminent)
+                    Link("Release notes", destination: release.pageURL)
+                        .foregroundStyle(Color.orbitTeal)
+                }
+            } else {
+                Button(updates.status == .checking ? "Checking…" : "Check for Updates") {
+                    Task { await updates.checkNow() }
+                }
+                .disabled(updates.status == .checking)
+                Text(message(updates))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func message(_ updates: UpdateChecker) -> String {
+        switch updates.status {
+        case .upToDate: return "You're up to date."
+        case .failed: return "Couldn't reach GitHub. Try again later."
+        case .checking, .available: return " "
+        case .idle:
+            guard let lastChecked = updates.lastChecked else { return " " }
+            return "Last checked \(lastChecked.formatted(.relative(presentation: .named)))."
+        }
     }
 }

@@ -14,6 +14,7 @@ final class Preferences {
         static let appearance = "appearance"
         static let globalShortcutsEnabled = "globalShortcutsEnabled"
         static let customVideoServices = "customVideoServices"
+        static let checkForUpdates = "checkForUpdates"
         static let menuBarFormat = "menuBarFormat"
         static let nextEventLeadMinutes = "nextEventLeadMinutes"
         static let showDaySummary = "showDaySummary"
@@ -47,6 +48,8 @@ final class Preferences {
     var appearance: AppearanceMode { didSet { defaults.set(appearance.rawValue, forKey: Key.appearance) } }
     var globalShortcutsEnabled: Bool { didSet { defaults.set(globalShortcutsEnabled, forKey: Key.globalShortcutsEnabled) } }
     var customVideoServices: [CustomVideoService] { didSet { store(customVideoServices, forKey: Key.customVideoServices) } }
+    /// Look for a new version on GitHub once a day.
+    var checkForUpdates: Bool { didSet { defaults.set(checkForUpdates, forKey: Key.checkForUpdates) } }
 
     // MARK: Menu bar
 
@@ -89,6 +92,7 @@ final class Preferences {
         self.defaults = defaults
         defaults.register(defaults: [
             Key.globalShortcutsEnabled: true,
+            Key.checkForUpdates: true,
             Key.nextEventLeadMinutes: 30,
             Key.showYearProgress: true,
             Key.highlightToday: true,
@@ -101,6 +105,7 @@ final class Preferences {
         appearance = Self.value(defaults, Key.appearance, default: .system)
         globalShortcutsEnabled = defaults.bool(forKey: Key.globalShortcutsEnabled)
         customVideoServices = Self.decoded(defaults, Key.customVideoServices) ?? []
+        checkForUpdates = defaults.bool(forKey: Key.checkForUpdates)
 
         menuBarFormat = Self.decoded(defaults, Key.menuBarFormat) ?? MenuBarFormat()
         nextEventLeadMinutes = defaults.integer(forKey: Key.nextEventLeadMinutes)

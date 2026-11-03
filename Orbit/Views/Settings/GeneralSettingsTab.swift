@@ -48,6 +48,13 @@ struct GeneralSettingsTab: View {
                 }
             }
 
+            Section("Updates") {
+                Toggle(isOn: $preferences.checkForUpdates) {
+                    Text("Check for updates automatically")
+                    Text("Once a day, Orbit asks GitHub for the latest version. Nothing about you or your calendar is sent.")
+                }
+            }
+
             CustomVideoServicesSection()
         }
         .formStyle(.grouped)

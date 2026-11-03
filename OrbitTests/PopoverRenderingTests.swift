@@ -231,6 +231,23 @@ final class PopoverRenderingTests: XCTestCase {
         XCTAssertGreaterThan(rep.pixelsHigh, 100)
     }
 
+    /// A newer release adds a Download row at the bottom of the calendar.
+    func testUpdateBanner() async {
+        let release = ReleaseInfo(
+            version: AppVersion("1.1.0")!,
+            pageURL: URL(string: "https://github.com/janakjobanputra/orbit/releases/tag/v1.1.0")!,
+            downloadURL: URL(string: "https://github.com/janakjobanputra/orbit/releases/download/v1.1.0/Orbit.dmg")
+        )
+        let plain = render(await makeState())
+        let state = await StateFixture.make(at: at(13, 12), latestRelease: release).state
+        XCTAssertEqual(state.updates.availableRelease, release)
+        for scheme in [ColorScheme.light, .dark] {
+            let rep = render(state, scheme: scheme)
+            attach(rep, "Update banner (\(scheme == .light ? "light" : "dark"))")
+            XCTAssertGreaterThan(rep.pixelsHigh, plain.pixelsHigh - 200)
+        }
+    }
+
     func testEventDetailView() async {
         let state = await StateFixture.make(at: at(13, 12)).state
         var event = CalendarEvent(

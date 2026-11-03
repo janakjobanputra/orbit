@@ -12,7 +12,7 @@
 
 Your whole day, one click away in the menu bar. [try-orbit.app](https://try-orbit.app)
 
-Native Swift, a few MB, reads your Mac calendar. No account, no subscription, no Electron, nothing leaves your Mac. I built this because I wanted my next meeting and my week a click away, without paying monthly for a calendar app or signing into yet another service.
+Native Swift, a few MB, reads your Mac calendar. No account, no subscription, no Electron, and your calendar never leaves your Mac (the only thing it fetches is a once-a-day check on GitHub for a new version, which you can turn off). I built this because I wanted my next meeting and my week a click away, without paying monthly for a calendar app or signing into yet another service.
 
 ## Install
 
@@ -36,6 +36,7 @@ The menu bar shows the date, the time, or your next meeting. Click it and you ge
 - Finished events step aside, so the next thing on your day is always at the top.
 - Year and day progress bars, week numbers, free-time gaps and a day summary, each optional.
 - A Settings window with a live preview of the calendar, so you see every change as you make it.
+- Tells you when a new version is out, with a Download button right in the calendar.
 - Keyboard shortcuts: `⇧⌘C` to open the calendar and `⇧⌘J` to join your next meeting from anywhere, `⌘N` for a new event, `⌘F` to search, `Esc` to step back out.
 
 ## Requirements

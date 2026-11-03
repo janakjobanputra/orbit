@@ -12,6 +12,7 @@ final class AppState {
     }
 
     let preferences: Preferences
+    let updates: UpdateChecker
     @ObservationIgnored private let eventService: any EventProviding
     @ObservationIgnored private let clock: () -> Date
     @ObservationIgnored private let baseCalendar: Calendar
@@ -42,11 +43,13 @@ final class AppState {
 
     init(
         preferences: Preferences = Preferences(),
+        updates: UpdateChecker = UpdateChecker(),
         eventService: any EventProviding = EventStoreService(),
         calendar: Calendar = .autoupdatingCurrent,
         clock: @escaping () -> Date = Date.init
     ) {
         self.preferences = preferences
+        self.updates = updates
         self.eventService = eventService
         self.baseCalendar = calendar
         self.clock = clock

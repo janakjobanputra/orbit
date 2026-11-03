@@ -38,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         applyPreferences()
         Task { await appState.start() }
+        Task { await checkForUpdatesPeriodically() }
         // For development: `Orbit.app/Contents/MacOS/Orbit -OpenSettingsOnLaunch YES`.
         if UserDefaults.standard.bool(forKey: "OpenSettingsOnLaunch") {
             showSettings()
@@ -46,6 +47,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         appState.stop()
+    }
+
+    /// Wakes hourly; the checker itself only contacts GitHub once a day.
+    private func checkForUpdatesPeriodically() async {
+        while !Task.isCancelled {
+            if appState.preferences.checkForUpdates {
+                await appState.updates.checkIfDue()
+            }
+            try? await Task.sleep(for: .seconds(60 * 60))
+        }
     }
 
     /// Applies app-wide preferences now and again whenever they change.

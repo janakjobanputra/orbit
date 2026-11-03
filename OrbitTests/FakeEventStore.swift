@@ -74,6 +74,7 @@ enum StateFixture {
     /// AppState over a fake store and throwaway defaults, already loaded.
     static func make(
         at time: Date = now,
+        latestRelease: ReleaseInfo? = nil,
         configure: @MainActor (FakeEventStore, Preferences) -> Void = { _, _ in }
     ) async -> (state: AppState, store: FakeEventStore, clock: TestClock) {
         let defaults = UserDefaults(suiteName: "OrbitTests-\(UUID().uuidString)")!
@@ -82,9 +83,25 @@ enum StateFixture {
         store.calendarList = [calendarInfo("work"), calendarInfo("home")]
         configure(store, preferences)
         let clock = TestClock(time)
-        let state = AppState(preferences: preferences, eventService: store, calendar: TestSupport.calendar()) { clock.now }
+        let updates = UpdateChecker(
+            currentVersion: AppVersion("1.0.0")!, fetcher: StubReleaseFetcher(release: latestRelease), defaults: defaults
+        ) { clock.now }
+        let state = AppState(
+            preferences: preferences, updates: updates, eventService: store, calendar: TestSupport.calendar()
+        ) { clock.now }
+        if latestRelease != nil { await updates.checkNow() }
         await state.start()
         state.stop()
         return (state, store, clock)
+    }
+}
+
+/// Answers update checks with a fixed release, or fails when there is none.
+struct StubReleaseFetcher: ReleaseFetching {
+    let release: ReleaseInfo?
+    struct NoRelease: Error {}
+    func latestRelease() async throws -> ReleaseInfo {
+        guard let release else { throw NoRelease() }
+        return release
     }
 }
