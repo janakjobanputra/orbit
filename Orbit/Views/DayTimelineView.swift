@@ -10,7 +10,7 @@ struct DayTimelineView: View {
     /// Leaves room above the first hour's label, which sits half above its line.
     private static let scrollAnchor = UnitPoint(x: 0.5, y: 0.04)
 
-    private var hourHeight: CGFloat { 40 * scale }
+    private var hourHeight: CGFloat { appState.preferences.eventDensity.hourHeight * scale }
     private var gutter: CGFloat { 46 * scale }
 
     var body: some View {
@@ -128,16 +128,18 @@ private struct TimelineBlock: View {
 
     var body: some View {
         let isPast = event.end <= appState.now
+        let attendance = event.attendance
+        let shape = RoundedRectangle(cornerRadius: 5)
         HStack(spacing: 0) {
-            Rectangle()
-                .fill(event.color.color)
+            AttendanceBar(color: event.color, attendance: attendance)
                 .frame(width: 3)
             VStack(alignment: .leading, spacing: 1) {
                 Text(event.title)
+                    .strikethrough(attendance == .declined)
                     .orbitFont(.caption, weight: .semibold)
                     .lineLimit(height < 34 ? 1 : 2)
                 if height >= 30 {
-                    Text(event.start..<event.end, format: .timeRange(in: timeZone))
+                    detailText
                         .orbitFont(.caption, monospacedDigit: true)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -148,10 +150,36 @@ private struct TimelineBlock: View {
             Spacer(minLength: 0)
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(event.color.color.opacity(0.18))
-        .clipShape(.rect(cornerRadius: 5))
-        .opacity(isPast ? 0.55 : 1)
+        // Unanswered invites are outlined rather than filled, and maybes get a lighter fill with a dashed edge.
+        .background(event.color.color.opacity(fillOpacity(attendance)), in: shape)
+        .overlay {
+            switch attendance {
+            case .notAnswered:
+                shape.strokeBorder(event.color.color.opacity(0.8), lineWidth: 1)
+            case .maybe:
+                shape.strokeBorder(event.color.color.opacity(0.7), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+            case .attending, .declined:
+                EmptyView()
+            }
+        }
+        .clipShape(shape)
+        .opacity(isPast || attendance == .declined ? 0.55 : 1)
         .opensDetails(of: event)
+    }
+
+    private var detailText: Text {
+        let time = Text(event.start..<event.end, format: .timeRange(in: timeZone))
+        guard let label = event.attendance.label else { return time }
+        return Text("\(time) · \(label)")
+    }
+
+    private func fillOpacity(_ attendance: Attendance) -> Double {
+        switch attendance {
+        case .attending: 0.18
+        case .notAnswered: 0.04
+        case .maybe: 0.09
+        case .declined: 0.10
+        }
     }
 }
 

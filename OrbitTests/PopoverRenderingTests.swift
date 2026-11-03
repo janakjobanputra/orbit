@@ -257,6 +257,35 @@ final class PopoverRenderingTests: XCTestCase {
         }
     }
 
+    /// Invitations you haven't accepted are marked in both views; declined ones only show when turned on.
+    func testAttendanceMarks() async {
+        let blue = EventColor(red: 0.22, green: 0.52, blue: 0.98), green = EventColor(red: 0.2, green: 0.7, blue: 0.42)
+        func invite(_ title: String, _ start: Date, _ end: Date, _ color: EventColor, _ response: Guest.Response?) -> CalendarEvent {
+            var event = CalendarEvent(id: title, title: title, start: start, end: end, isAllDay: false,
+                                      calendarID: "work", color: color, location: nil, meetingURL: nil)
+            if let response {
+                event.guests = [Guest(name: "You", response: response, isYou: true), Guest(name: "Sam", response: .accepted, isOrganizer: true)]
+            }
+            return event
+        }
+        let state = await StateFixture.make(at: at(9, 40)) { store, preferences in
+            store.add(invite("Standup", at(10), at(10, 30), blue, .accepted))
+            store.add(invite("Vendor pitch", at(11), at(12), blue, .pending))
+            store.add(invite("Offsite planning", at(12, 30), at(13, 30), green, .tentative))
+            store.add(invite("Budget review", at(14), at(15), blue, .declined))
+            store.add(invite("Focus time", at(15, 30), at(16, 30), green, nil))
+            preferences.showDeclinedEvents = true
+        }.state
+        state.preferences.showMonthGrid = false
+        for view in [EventsView.agenda, .day] {
+            state.preferences.eventsView = view
+            state.preferences.eventDensity = .cozy
+            for scheme in [ColorScheme.light, .dark] {
+                attach(render(state, scheme: scheme), "Attendance \(view.rawValue) (\(scheme == .light ? "light" : "dark"))")
+            }
+        }
+    }
+
     /// Late in the day, today says there's nothing left instead of ending on a finished event.
     func testNothingLeftToday() async {
         let state = await StateFixture.make(at: at(21)) { store, _ in

@@ -35,6 +35,7 @@ final class Preferences {
         static let hideEmptyDays = "hideEmptyDays"
         static let hideAllDayEvents = "hideAllDayEvents"
         static let hidePastEvents = "hidePastEvents"
+        static let showDeclinedEvents = "showDeclinedEvents"
         static let defaultCalendarID = "defaultCalendarID"
         static let ignoredTitleKeywords = "ignoredTitleKeywords"
         static let mapsProvider = "mapsProvider"
@@ -82,6 +83,8 @@ final class Preferences {
     var hideEmptyDays: Bool { didSet { defaults.set(hideEmptyDays, forKey: Key.hideEmptyDays) } }
     var hideAllDayEvents: Bool { didSet { defaults.set(hideAllDayEvents, forKey: Key.hideAllDayEvents) } }
     var hidePastEvents: Bool { didSet { defaults.set(hidePastEvents, forKey: Key.hidePastEvents) } }
+    /// Show events you've declined, crossed out. Off by default, so they stay out of the way.
+    var showDeclinedEvents: Bool { didSet { defaults.set(showDeclinedEvents, forKey: Key.showDeclinedEvents) } }
 
     // MARK: Calendars
 
@@ -133,6 +136,7 @@ final class Preferences {
         hideEmptyDays = defaults.bool(forKey: Key.hideEmptyDays)
         hideAllDayEvents = defaults.bool(forKey: Key.hideAllDayEvents)
         hidePastEvents = defaults.bool(forKey: Key.hidePastEvents)
+        showDeclinedEvents = defaults.bool(forKey: Key.showDeclinedEvents)
 
         defaultCalendarID = defaults.string(forKey: Key.defaultCalendarID)
         ignoredTitleKeywords = defaults.string(forKey: Key.ignoredTitleKeywords) ?? ""

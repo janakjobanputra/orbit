@@ -106,7 +106,7 @@ final class AppState {
 
     var menuBarTitle: String {
         MenuBarFormatter(format: preferences.menuBarFormat, leadMinutes: preferences.nextEventLeadMinutes, calendar: calendar)
-            .title(now: menuBarNow, events: visible(nearbyEvents))
+            .title(now: menuBarNow, events: visible(nearbyEvents).filter { $0.attendance != .declined })
     }
 
     var daySummary: DaySummary {
@@ -161,7 +161,7 @@ final class AppState {
     /// The meeting in progress, or the next one with a video link in the coming 12 hours.
     var nextMeetingURL: URL? {
         visible(nearbyEvents)
-            .filter { !$0.isAllDay && $0.meetingURL != nil && $0.end > now && $0.start < now.addingTimeInterval(12 * 3600) }
+            .filter { $0.attendance != .declined && !$0.isAllDay && $0.meetingURL != nil && $0.end > now && $0.start < now.addingTimeInterval(12 * 3600) }
             .min { $0.start < $1.start }?
             .meetingURL
     }
@@ -322,6 +322,7 @@ final class AppState {
             preferences.isCalendarVisible(event.calendarID)
                 && !(preferences.hideAllDayEvents && event.isAllDay)
                 && !TitleFilter.isIgnored(event.title, keywords: keywords)
+                && (preferences.showDeclinedEvents || event.attendance != .declined)
         }
     }
 

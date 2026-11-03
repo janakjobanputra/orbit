@@ -37,6 +37,33 @@ struct CalendarEvent: Identifiable, Hashable, Sendable {
     func isInProgress(at date: Date) -> Bool {
         start <= date && date < end
     }
+
+    /// Whether you're going, from your own reply to the invitation. Events you organised, or that
+    /// aren't invitations at all, count as attending.
+    var attendance: Attendance {
+        guard let you = guests.first(where: \.isYou), !you.isOrganizer else { return .attending }
+        switch you.response {
+        case .accepted: return .attending
+        case .pending: return .notAnswered
+        case .tentative: return .maybe
+        case .declined: return .declined
+        }
+    }
+}
+
+/// Your reply to an event, as the agenda and Day view mark it.
+enum Attendance: Hashable, Sendable {
+    case attending, notAnswered, maybe, declined
+
+    /// Shown next to the event's time; nothing for events you're going to.
+    var label: String? {
+        switch self {
+        case .attending: nil
+        case .notAnswered: "Not answered"
+        case .maybe: "Maybe"
+        case .declined: "Declined"
+        }
+    }
 }
 
 struct Guest: Hashable, Sendable {

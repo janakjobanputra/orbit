@@ -84,7 +84,6 @@ final class EventStoreService: EventProviding {
     func events(from start: Date, to end: Date, extraMeetingHosts: [String] = []) -> [CalendarEvent] {
         let predicate = store.predicateForEvents(withStart: start, end: end, calendars: nil)
         return store.events(matching: predicate)
-            .filter { !Self.isDeclined($0) }
             .map { Self.map($0, extraMeetingHosts: extraMeetingHosts) }
             .sorted { ($0.start, $0.end) < ($1.start, $1.end) }
     }
@@ -148,10 +147,6 @@ final class EventStoreService: EventProviding {
             isOrganizer: participant.participantRole == .chair,
             isYou: participant.isCurrentUser
         )
-    }
-
-    private static func isDeclined(_ event: EKEvent) -> Bool {
-        event.attendees?.first(where: \.isCurrentUser)?.participantStatus == .declined
     }
 
     private static func color(of calendar: EKCalendar) -> EventColor {

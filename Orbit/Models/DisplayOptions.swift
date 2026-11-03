@@ -86,6 +86,15 @@ enum Density: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// Points per hour in the Day view, so the same setting spaces out both the agenda and the timeline.
+    var hourHeight: CGFloat {
+        switch self {
+        case .compact: 40
+        case .cozy: 56
+        case .airy: 72
+        }
+    }
+
     var sectionSpacing: CGFloat {
         switch self {
         case .compact: 14

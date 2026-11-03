@@ -161,25 +161,31 @@ struct EventRowView: View {
 
     private var singleLineRow: some View {
         HStack(spacing: 7) {
-            RoundedRectangle(cornerRadius: 1.5)
-                .fill(event.color.color)
+            AttendanceBar(color: event.color, attendance: event.attendance)
                 .frame(width: 3, height: 13 * scale)
-            Text(event.title)
+            titleText
                 .orbitFont(.callout, weight: .medium)
                 .lineLimit(1)
+            if let label = event.attendance.label {
+                Text(label)
+                    .orbitFont(.caption)
+                    .foregroundStyle(.tertiary)
+                    .fixedSize()
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .opacity(event.attendance == .declined ? 0.5 : 1)
     }
 
     /// The usual one- or two-line row.
     private var compactRow: some View {
         HStack(alignment: .top, spacing: 8) {
-            ColorBar(color: event.color)
+            ColorBar(color: event.color, attendance: event.attendance)
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.title)
+                titleText
                     .orbitFont(.callout, weight: .medium)
                     .lineLimit(2)
-                timeText
+                timeAndAttendance
                     .orbitFont(.caption, monospacedDigit: true)
                     .foregroundStyle(.secondary)
                 if let location = event.location, !location.isEmpty, event.meetingURL == nil {
@@ -204,17 +210,17 @@ struct EventRowView: View {
             }
         }
         .fixedSize(horizontal: false, vertical: true)
-        .opacity(event.end < appState.now ? 0.5 : 1)
+        .opacity(event.end < appState.now || event.attendance == .declined ? 0.5 : 1)
     }
 
     /// The event happening now, or starting within ten minutes: tinted, with its links one click away.
     private var highlightedRow: some View {
         let timing = EventTiming(event: event, now: appState.now)
         return HStack(alignment: .top, spacing: 8) {
-            ColorBar(color: event.color)
+            ColorBar(color: event.color, attendance: event.attendance)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline) {
-                    timeText
+                    timeAndAttendance
                         .orbitFont(.caption, monospacedDigit: true)
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 4)
@@ -222,7 +228,7 @@ struct EventRowView: View {
                         TimingPill(text: label)
                     }
                 }
-                Text(event.title)
+                titleText
                     .orbitFont(.body, weight: .semibold)
                     .lineLimit(2)
                 let chips = linkChips
@@ -263,16 +269,45 @@ struct EventRowView: View {
         if event.isAllDay { return Text("All day") }
         return Text(event.start..<max(event.end, event.start), format: .timeRange(in: timeZone))
     }
+
+    /// The time, followed by "Not answered", "Maybe" or "Declined" for invitations you haven't accepted.
+    private var timeAndAttendance: Text {
+        guard let label = event.attendance.label else { return timeText }
+        return Text("\(timeText) · \(label)")
+    }
+
+    /// Declined events are crossed out.
+    private var titleText: Text {
+        Text(event.title).strikethrough(event.attendance == .declined)
+    }
 }
 
 struct ColorBar: View {
 
     let color: EventColor
+    var attendance: Attendance = .attending
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 1.5)
-            .fill(color.color)
+        AttendanceBar(color: color, attendance: attendance)
             .frame(width: 3)
+    }
+}
+
+/// The calendar-coloured bar beside an event: solid when you're going, an outline when you haven't
+/// answered, half-strength for maybe, and faint once declined.
+struct AttendanceBar: View {
+
+    let color: EventColor
+    let attendance: Attendance
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 1.5)
+        switch attendance {
+        case .attending: shape.fill(color.color)
+        case .notAnswered: shape.strokeBorder(color.color, lineWidth: 1)
+        case .maybe: shape.fill(color.color.opacity(0.45))
+        case .declined: shape.fill(color.color.opacity(0.3))
+        }
     }
 }
 

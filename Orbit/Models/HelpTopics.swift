@@ -54,12 +54,17 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .calendar,
             question: "How do I switch between the Day view and the agenda?",
-            answer: "Use Display › Layout › Events view. Day shows the selected date hour by hour; Agenda lists the days ahead. Click any date in the month to see that day."
+            answer: "Use Display › Layout › Events view. Day shows the selected date hour by hour; Agenda lists the days ahead. Click any date in the month to see that day. Display › Layout › Events (Compact, Cozy or Airy) spaces out both: in the Day view it sets how tall each hour is."
         ),
         HelpTopic(
             group: .calendar,
             question: "How do I add, edit or delete an event?",
             answer: "Click + in the calendar, or press ⌘N, to add one. Click an event for its details, where you can delete it or choose Open in Calendar to edit it there. Events on read-only calendars, such as holidays, can't be deleted."
+        ),
+        HelpTopic(
+            group: .calendar,
+            question: "Why do some events look outlined, dashed or crossed out?",
+            answer: "They're invitations you haven't accepted. An outline means you haven't answered yet, a lighter block with a dashed edge means you said maybe, and crossed out means you declined. Declined events are hidden unless you turn on Display › Layout › Show declined events. Reply from Apple Calendar: click the event, then Open in Calendar."
         ),
         HelpTopic(
             group: .calendar,

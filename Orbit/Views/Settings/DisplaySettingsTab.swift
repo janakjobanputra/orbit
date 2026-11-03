@@ -63,6 +63,10 @@ struct DisplaySettingsTab: View {
                 }
                 Toggle("Hide all-day events", isOn: $preferences.hideAllDayEvents)
                 Toggle("Hide past events", isOn: $preferences.hidePastEvents)
+                Toggle(isOn: $preferences.showDeclinedEvents) {
+                    Text("Show declined events")
+                    Text("Crossed out. Invitations you haven't answered or said maybe to are always shown, marked as such.")
+                }
             }
         }
         .formStyle(.grouped)
