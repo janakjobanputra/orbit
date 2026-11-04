@@ -42,6 +42,8 @@ struct ReleaseInfo: Equatable, Sendable {
     let pageURL: URL
     /// The disk image to download, when the release has one.
     let downloadURL: URL?
+    /// The release's notes, in GitHub's Markdown.
+    var notes = ""
 
     var bestURL: URL { downloadURL ?? pageURL }
 
@@ -56,13 +58,16 @@ struct ReleaseInfo: Equatable, Sendable {
             }
             let tag_name: String
             let html_url: URL
+            let body: String?
             let assets: [Asset]
         }
         let response = try JSONDecoder().decode(Response.self, from: data)
         guard let version = AppVersion(response.tag_name) else { throw NotAVersion() }
         let images = response.assets.filter { $0.name.lowercased().hasSuffix(".dmg") }
         let image = images.first { $0.name == "Orbit.dmg" } ?? images.first
-        return ReleaseInfo(version: version, pageURL: response.html_url, downloadURL: image?.browser_download_url)
+        return ReleaseInfo(
+            version: version, pageURL: response.html_url, downloadURL: image?.browser_download_url, notes: response.body ?? ""
+        )
     }
 }
 
@@ -97,6 +102,11 @@ final class UpdateChecker {
 
     static let interval: TimeInterval = 24 * 60 * 60
     private static let lastCheckedKey = "lastUpdateCheck"
+    private static let skippedVersionKey = "skippedUpdateVersion"
+    private static let remindAfterKey = "remindUpdateAfter"
+
+    /// Shows the update dialog. Set by the app; does nothing in tests and previews.
+    @ObservationIgnored var presentPrompt: @MainActor (ReleaseInfo) -> Void = { _ in }
 
     let currentVersion: AppVersion
     private(set) var status: Status = .idle
@@ -123,10 +133,44 @@ final class UpdateChecker {
         if case .available(let release) = status { release } else { nil }
     }
 
-    /// The automatic check: does nothing if the last successful check was under a day ago.
+    /// The newer release for the Download row in the calendar, unless you chose to skip it.
+    var bannerRelease: ReleaseInfo? {
+        availableRelease.flatMap { isSkipped($0) ? nil : $0 }
+    }
+
+    /// The automatic check: does nothing if the last successful check was under a day ago. A new version
+    /// you haven't skipped or put off brings up the update dialog.
     func checkIfDue() async {
         if let lastChecked, clock().timeIntervalSince(lastChecked) < Self.interval { return }
         await checkNow()
+        if let release = availableRelease, shouldPrompt(release) { presentPrompt(release) }
+    }
+
+    /// Check for Updates in Settings: shows the dialog for any newer version, even one you skipped.
+    func checkNowAndPrompt() async {
+        await checkNow()
+        if let release = availableRelease { presentPrompt(release) }
+    }
+
+    func shouldPrompt(_ release: ReleaseInfo) -> Bool {
+        guard !isSkipped(release) else { return false }
+        guard let remindAfter = defaults.object(forKey: Self.remindAfterKey) as? Date else { return true }
+        return clock() >= remindAfter
+    }
+
+    /// Skip This Version: no more dialogs or banner for it, but a later version is still offered.
+    func skip(_ release: ReleaseInfo) {
+        defaults.set(release.version.description, forKey: Self.skippedVersionKey)
+        defaults.removeObject(forKey: Self.remindAfterKey)
+    }
+
+    /// Remind Me Later: ask again on the first check a day from now.
+    func remindLater() {
+        defaults.set(clock().addingTimeInterval(Self.interval), forKey: Self.remindAfterKey)
+    }
+
+    private func isSkipped(_ release: ReleaseInfo) -> Bool {
+        defaults.string(forKey: Self.skippedVersionKey).flatMap(AppVersion.init) == release.version
     }
 
     func checkNow() async {

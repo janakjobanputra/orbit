@@ -103,7 +103,7 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .appAndPrivacy,
             question: "How do I update Orbit?",
-            answer: "Orbit tells you when a new version is out, with a Download button at the bottom of the calendar. You can also check under About. If you installed it with Homebrew, run brew upgrade."
+            answer: "When a new version is out, Orbit shows a window with its release notes: Download Update gets the new disk image, Remind Me Later asks again tomorrow, and Skip This Version waits for the one after. A Download row also appears at the bottom of the calendar. Check any time under About › Check for Updates. If you installed with Homebrew, run brew upgrade instead."
         ),
         HelpTopic(
             group: .appAndPrivacy,

@@ -53,7 +53,7 @@ The menu bar shows the date, the time, your next meeting, or just Orbit's logo. 
 - Finished events step aside, so the next thing on your day is always at the top.
 - Year and day progress bars, week numbers, free-time gaps and a day summary, each optional.
 - A Settings window with a live preview of the calendar, so you see every change as you make it.
-- Tells you when a new version is out, with a Download button right in the calendar.
+- Tells you when a new version is out, with its release notes and a one-click download.
 - Keyboard shortcuts: `⇧⌘C` to open the calendar and `⇧⌘J` to join your next meeting from anywhere, `⌘N` for a new event, `⌘F` to search, `Esc` to step back out.
 
 ## Requirements

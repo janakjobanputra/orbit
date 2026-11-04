@@ -481,6 +481,29 @@ final class PopoverRenderingTests: XCTestCase {
         attach(snapshot(host), "Display pane")
     }
 
+    /// The dialog that offers a new version, with its release notes.
+    func testUpdateDialog() async {
+        let state = await makeState()
+        let release = ReleaseInfo(
+            version: AppVersion("1.1.3")!,
+            pageURL: URL(string: "https://github.com/janakjobanputra/orbit/releases/tag/v1.1.3")!,
+            downloadURL: nil,
+            notes: "**Install:** download it below.\n\n### What's new in 1.1.3\n- **Invitations** you haven't accepted are marked in the agenda and Day view.\n- Events spacing (Compact, Cozy, Airy) also sets the Day view's hour height.\n- Orbit now asks before updating, with release notes like these."
+        )
+        for scheme in [ColorScheme.light, .dark] {
+            let root = UpdateDialogView(release: release, currentVersion: AppVersion("1.1.2")!, preferences: state.preferences,
+                                        skip: {}, remindLater: {}, download: {})
+                .environment(\.colorScheme, scheme)
+                .background(Color(nsColor: .windowBackgroundColor))
+            let host = NSHostingView(rootView: root)
+            host.frame.size = host.fittingSize
+            let window = NSWindow(contentRect: host.frame, styleMask: [.titled], backing: .buffered, defer: false)
+            window.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
+            window.contentView = host
+            attach(snapshot(host), "Update dialog (\(scheme == .dark ? "dark" : "light"))")
+        }
+    }
+
     /// Settings › Help with a couple of answers open.
     func testHelpPane() async {
         let state = await makeState()

@@ -53,7 +53,7 @@ private struct UpdateStatusView: View {
                 }
             } else {
                 Button(updates.status == .checking ? "Checking…" : "Check for Updates") {
-                    Task { await updates.checkNow() }
+                    Task { await updates.checkNowAndPrompt() }
                 }
                 .disabled(updates.status == .checking)
                 Text(message(updates))

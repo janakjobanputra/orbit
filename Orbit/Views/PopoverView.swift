@@ -121,7 +121,7 @@ struct CalendarPanel: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
             }
-            if let release = appState.updates.availableRelease {
+            if let release = appState.updates.bannerRelease {
                 Divider()
                 UpdateBanner(release: release)
             }

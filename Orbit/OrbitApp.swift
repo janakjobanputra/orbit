@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
     private var statusItemController: StatusItemController?
     private var settingsWindow: NSWindow?
+    private lazy var updateDialog = UpdateDialogController(updates: appState.updates, preferences: appState.preferences)
 
     private var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -37,8 +38,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.appState.joinNextMeeting()
         }
         applyPreferences()
+        appState.updates.presentPrompt = { [weak self] release in self?.updateDialog.show(release) }
         Task { await appState.start() }
         Task { await checkForUpdatesPeriodically() }
+        // For development: `-PreviewUpdateDialog YES` shows the dialog for the latest release, whatever version this is.
+        if UserDefaults.standard.bool(forKey: "PreviewUpdateDialog") {
+            Task { [weak self] in
+                if let release = try? await GitHubReleaseFetcher().latestRelease() { self?.updateDialog.show(release) }
+            }
+        }
         // For development: `Orbit.app/Contents/MacOS/Orbit -OpenSettingsOnLaunch YES`.
         if UserDefaults.standard.bool(forKey: "OpenSettingsOnLaunch") {
             showSettings()
