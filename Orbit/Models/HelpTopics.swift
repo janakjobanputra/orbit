@@ -49,7 +49,7 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .calendar,
             question: "Why don't I see my events?",
-            answer: "Orbit shows the calendars your Mac syncs in Apple Calendar. Add Google, Exchange or other accounts in System Settings › Internet Accounts, then turn their calendars on under Calendars. If none appear at all, allow Orbit in System Settings › Privacy & Security › Calendars."
+            answer: "Orbit shows the calendars your Mac syncs in Apple Calendar. Add Google, Exchange or other accounts in System Settings › Internet Accounts, then turn their calendars on under Calendars. If none appear at all, allow Orbit in System Settings › Privacy & Security › Calendars. Orbit notices new accounts and access by itself, so there's no need to restart it: open the calendar and they're there."
         ),
         HelpTopic(
             group: .calendar,

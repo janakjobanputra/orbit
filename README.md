@@ -53,12 +53,13 @@ The menu bar shows the date, the time, your next meeting, or just Orbit's logo. 
 - Finished events step aside, so the next thing on your day is always at the top.
 - Year and day progress bars, week numbers, free-time gaps and a day summary, each optional.
 - A Settings window with a live preview of the calendar, so you see every change as you make it.
+- A short welcome tour on first launch that sets up calendar access, your view and the menu bar.
 - Tells you when a new version is out, with its release notes and a one-click download.
 - Keyboard shortcuts: `⇧⌘C` to open the calendar and `⇧⌘J` to join your next meeting from anywhere, `⌘N` for a new event, `⌘F` to search, `Esc` to step back out.
 
 ## Requirements
 
-macOS 15 Sequoia or later. It will ask for calendar access on first launch.
+macOS 15 Sequoia or later. The welcome tour asks for calendar access on first launch.
 
 ## Build from source
 
