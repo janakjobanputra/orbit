@@ -16,6 +16,10 @@ final class FakeEventStore: EventProviding {
     var calendarList: [CalendarInfo] = []
     var stored: [Stored] = []
     private(set) var created: [(title: String, calendarID: String)] = []
+    /// What a stale EventKit store misses until `refresh()`: an account added in System Settings while Orbit runs.
+    var unseenUntilRefresh: (calendars: [CalendarInfo], events: [CalendarEvent]) = ([], [])
+    private(set) var fullFetches = 0
+    private(set) var summaryFetches = 0
 
     func add(_ event: CalendarEvent, link: String? = nil) {
         stored.append(Stored(event: event, linkText: link))
@@ -34,7 +38,25 @@ final class FakeEventStore: EventProviding {
         ), link: [url?.absoluteString, location, notes].compactMap { $0 }.joined(separator: "\n"))
     }
 
+    func refresh() -> Bool {
+        defer { unseenUntilRefresh = ([], []) }
+        guard !unseenUntilRefresh.calendars.isEmpty else { return false }
+        calendarList += unseenUntilRefresh.calendars
+        unseenUntilRefresh.events.forEach { add($0) }
+        return true
+    }
+
+    func eventSummaries(from start: Date, to end: Date) -> [CalendarEvent] {
+        summaryFetches += 1
+        return matching(from: start, to: end, extraMeetingHosts: [])
+    }
+
     func events(from start: Date, to end: Date, extraMeetingHosts: [String]) -> [CalendarEvent] {
+        fullFetches += 1
+        return matching(from: start, to: end, extraMeetingHosts: extraMeetingHosts)
+    }
+
+    private func matching(from start: Date, to end: Date, extraMeetingHosts: [String]) -> [CalendarEvent] {
         stored
             .filter { $0.event.start < end && $0.event.end > start }
             .map { item in

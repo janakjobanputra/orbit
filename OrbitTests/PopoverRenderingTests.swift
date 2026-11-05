@@ -504,6 +504,38 @@ final class PopoverRenderingTests: XCTestCase {
         }
     }
 
+    /// Every page of the welcome tour, in light and dark, plus the calendar page before access is granted.
+    func testWelcomeTour() async {
+        let state = await makeState()
+        for scheme in [ColorScheme.light, .dark] {
+            for step in OnboardingStep.allCases {
+                let rep = renderTour(state, step: step, scheme: scheme)
+                attach(rep, "Tour \(step.rawValue + 1) \(step) (\(scheme == .dark ? "dark" : "light"))")
+                XCTAssertEqual(rep.size.width, 720)
+            }
+        }
+        let (fresh, freshStore, _) = await StateFixture.make()
+        freshStore.access = .notDetermined
+        fresh.refreshCalendars()
+        attach(renderTour(fresh, step: .calendars, scheme: .light), "Tour calendars, before access")
+        let denied = await StateFixture.make { store, _ in store.access = .denied }.state
+        attach(renderTour(denied, step: .calendars, scheme: .light), "Tour calendars, access off")
+    }
+
+    private func renderTour(_ state: AppState, step: OnboardingStep, scheme: ColorScheme) -> NSBitmapImageRep {
+        let root = OnboardingView(step: step, finish: { _ in })
+            .environment(state)
+            .environment(\.colorScheme, scheme)
+        let host = NSHostingView(rootView: root)
+        host.frame.size = CGSize(width: 720, height: 560)
+        let window = NSWindow(contentRect: host.frame, styleMask: [.titled], backing: .buffered, defer: false)
+        window.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
+        window.contentView = host
+        // The previews load their sample events in a task.
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        return snapshot(host)
+    }
+
     /// Settings › Help with a couple of answers open.
     func testHelpPane() async {
         let state = await makeState()

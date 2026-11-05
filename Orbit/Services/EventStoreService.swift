@@ -10,9 +10,21 @@ protocol EventProviding: AnyObject {
     func calendars() -> [CalendarInfo]
     func createEvent(title: String, start: Date, end: Date, isAllDay: Bool, calendarID: String, location: String?, url: URL?, notes: String?) throws
     func events(from start: Date, to end: Date, extraMeetingHosts: [String]) -> [CalendarEvent]
+    /// The same events without notes, links or meeting links: enough for the month grid's dots, and much cheaper.
+    func eventSummaries(from start: Date, to end: Date) -> [CalendarEvent]
+    /// Picks up calendar accounts added or removed since the last call. True when something changed.
+    func refresh() -> Bool
     /// Deletes this one occurrence, leaving the rest of a repeating event alone.
     func deleteEvent(_ event: CalendarEvent) throws
     func startObserving(onChange: @escaping @MainActor () -> Void)
+}
+
+extension EventProviding {
+    func eventSummaries(from start: Date, to end: Date) -> [CalendarEvent] {
+        events(from: start, to: end, extraMeetingHosts: [])
+    }
+
+    func refresh() -> Bool { false }
 }
 
 @MainActor
@@ -34,8 +46,9 @@ final class EventStoreService: EventProviding {
         }
     }
 
-    private let store = EKEventStore()
+    private var store = EKEventStore()
     private var observers: [NSObjectProtocol] = []
+    private var onChange: (@MainActor () -> Void)?
 
     var access: Access {
         switch EKEventStore.authorizationStatus(for: .event) {
@@ -88,6 +101,30 @@ final class EventStoreService: EventProviding {
             .sorted { ($0.start, $0.end) < ($1.start, $1.end) }
     }
 
+    func eventSummaries(from start: Date, to end: Date) -> [CalendarEvent] {
+        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: nil)
+        return store.events(matching: predicate)
+            .map { Self.map($0, extraMeetingHosts: [], detailed: false) }
+            .sorted { ($0.start, $0.end) < ($1.start, $1.end) }
+    }
+
+    /// An `EKEventStore` keeps the accounts it started with: one added later in System Settings › Internet Accounts,
+    /// or every account when access was granted after the store was made, can stay missing until the app restarts.
+    /// So this looks with a fresh store and switches to it when it sees different calendars.
+    func refresh() -> Bool {
+        guard access == .granted else { return false }
+        store.refreshSourcesIfNecessary()
+        let fresh = EKEventStore()
+        guard Self.calendarIDs(in: fresh) != Self.calendarIDs(in: store) else { return false }
+        store = fresh
+        if let onChange { startObserving(onChange: onChange) }
+        return true
+    }
+
+    private static func calendarIDs(in store: EKEventStore) -> Set<String> {
+        Set(store.calendars(for: .event).map(\.calendarIdentifier))
+    }
+
     func deleteEvent(_ event: CalendarEvent) throws {
         guard let occurrence = occurrence(of: event) else { throw StoreError.eventNotFound }
         try store.remove(occurrence, span: .thisEvent, commit: true)
@@ -102,20 +139,26 @@ final class EventStoreService: EventProviding {
 
     /// Calls `onChange` when calendar data changes, the day rolls over, or the Mac wakes.
     func startObserving(onChange: @escaping @MainActor () -> Void) {
+        self.onChange = onChange
+        let center = NotificationCenter.default
+        let workspace = NSWorkspace.shared.notificationCenter
+        observers.forEach {
+            center.removeObserver($0)
+            workspace.removeObserver($0)
+        }
         let handler: @Sendable (Notification) -> Void = { _ in
             MainActor.assumeIsolated { onChange() }
         }
-        let center = NotificationCenter.default
         observers = [
             center.addObserver(forName: .EKEventStoreChanged, object: store, queue: .main, using: handler),
             center.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main, using: handler),
-            NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main, using: handler),
+            workspace.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main, using: handler),
         ]
     }
 
-    private static func map(_ event: EKEvent, extraMeetingHosts: [String]) -> CalendarEvent {
+    private static func map(_ event: EKEvent, extraMeetingHosts: [String], detailed: Bool = true) -> CalendarEvent {
         let title = event.title ?? ""
-        let fields = [event.url?.absoluteString, event.location, event.notes]
+        let fields = detailed ? [event.url?.absoluteString, event.location, event.notes] : []
         return CalendarEvent(
             id: "\(event.calendarItemIdentifier)-\(event.startDate.timeIntervalSince1970)",
             title: title.isEmpty ? "Untitled" : title,
@@ -126,7 +169,7 @@ final class EventStoreService: EventProviding {
             color: color(of: event.calendar),
             location: event.location,
             meetingURL: MeetingLinkDetector.firstMeetingURL(in: fields, extraHosts: extraMeetingHosts),
-            notes: NotesText.plain(event.notes),
+            notes: detailed ? NotesText.plain(event.notes) : nil,
             links: MeetingLinkDetector.otherLinks(in: fields, extraHosts: extraMeetingHosts),
             guests: (event.attendees ?? []).map(guest),
             calendarItemID: event.calendarItemIdentifier

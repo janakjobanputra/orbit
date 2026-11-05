@@ -52,8 +52,11 @@ enum MeetingLinkDetector {
     /// Help links that Google and Microsoft add to every invitation.
     static let boilerplateHosts = ["support.google.com", "g.co", "aka.ms", "go.microsoft.com"]
 
+    /// Made once: building a detector costs far more than running it, and every event's fields go through here.
+    private static let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+
     static func links(in text: String) -> [URL] {
-        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else { return [] }
+        guard let detector else { return [] }
         let range = NSRange(text.startIndex..., in: text)
         return detector.matches(in: text, range: range).compactMap(\.url)
     }

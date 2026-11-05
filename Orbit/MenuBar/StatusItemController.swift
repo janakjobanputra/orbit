@@ -92,6 +92,8 @@ final class StatusItemController: NSObject {
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
         NSApp.activate()
+        // After the popover is up, so looking for new accounts never delays it opening.
+        Task { [appState] in appState.refreshCalendars() }
     }
 }
 

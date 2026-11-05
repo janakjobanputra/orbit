@@ -27,7 +27,8 @@ final class AppState {
     private(set) var menuBarNow: Date
     private(set) var calendars: [CalendarInfo] = []
     private(set) var systemDefaultCalendarID: String?
-    private var gridEvents: [CalendarEvent] = []
+    /// The month grid's events, filed under each day they touch, so drawing 42 days doesn't scan every event 42 times.
+    private var gridEventsByDay: [Date: [CalendarEvent]] = [:]
     private var agendaEvents: [CalendarEvent] = []
     private var nearbyEvents: [CalendarEvent] = []
     private var searchPool: [CalendarEvent] = []
@@ -38,7 +39,9 @@ final class AppState {
     var detailEventID: String?
 
     var displayedMonth: Date {
-        didSet { reload() }
+        didSet {
+            if !calendar.isDate(oldValue, equalTo: displayedMonth, toGranularity: .month) { reloadGrid() }
+        }
     }
     var selectedDate: Date {
         didSet {
@@ -67,15 +70,19 @@ final class AppState {
 
     // MARK: - Lifecycle
 
-    func start() async {
+    /// Opens the welcome tour. Set by the app; does nothing in tests and previews.
+    @ObservationIgnored var showWelcomeTour: @MainActor () -> Void = {}
+
+    /// `askForAccess: false` leaves the calendar permission question for the welcome tour to ask.
+    func start(askForAccess: Bool = true) async {
         access = eventService.access
-        if access == .notDetermined {
+        if askForAccess, access == .notDetermined {
             access = await eventService.requestAccess() ? .granted : .denied
         }
         eventService.startObserving { [weak self] in
             guard let self else { return }
             self.now = self.clock()
-            self.reload()
+            if !self.refreshCalendars() { self.reload() }
         }
         reload()
         startTicking()
@@ -84,6 +91,18 @@ final class AppState {
     func requestAccess() async {
         access = await eventService.requestAccess() ? .granted : eventService.access
         reload()
+    }
+
+    /// Catches what changed outside Orbit since it last looked: calendar access turned on in System Settings,
+    /// or an account added in Internet Accounts. Runs when the calendar or Settings opens and when calendars change.
+    /// Reloads, and returns true, only when something did change.
+    @discardableResult
+    func refreshCalendars() -> Bool {
+        let previous = access
+        access = eventService.access
+        let changed = eventService.refresh() || access != previous
+        if changed { reload() }
+        return changed
     }
 
     func stop() {
@@ -167,7 +186,7 @@ final class AppState {
     }
 
     func events(on day: Date) -> [CalendarEvent] {
-        visible(gridEvents).filter { $0.overlaps(day: day, calendar: calendar) }
+        visible(gridEventsByDay[calendar.startOfDay(for: day)] ?? [])
     }
 
     /// Up to three distinct calendar colours for the dots under a day.
@@ -288,20 +307,37 @@ final class AppState {
 
     func reload() {
         guard access == .granted else {
-            gridEvents = []
+            calendars = []
+            gridEventsByDay = [:]
             agendaEvents = []
             nearbyEvents = []
             return
         }
         calendars = eventService.calendars()
         systemDefaultCalendarID = eventService.defaultCalendarID
-        // The grid shows up to a week either side of the month, whichever day the week starts on.
-        if let month = calendar.dateInterval(of: .month, for: displayedMonth) {
-            gridEvents = fetch(from: month.start.addingTimeInterval(-7 * 86_400), to: month.end.addingTimeInterval(14 * 86_400))
-        }
+        reloadGrid()
         let today = calendar.startOfDay(for: now)
         nearbyEvents = fetch(from: today, to: today.addingTimeInterval(2 * 86_400))
         reloadAgenda()
+    }
+
+    /// Only the month grid changes when you page through months, and it only needs each event's day and colour.
+    private func reloadGrid() {
+        guard access == .granted, let month = calendar.dateInterval(of: .month, for: displayedMonth) else { return }
+        // The grid shows up to a week either side of the month, whichever day the week starts on.
+        let start = calendar.startOfDay(for: month.start.addingTimeInterval(-7 * 86_400))
+        let end = month.end.addingTimeInterval(14 * 86_400)
+        var byDay: [Date: [CalendarEvent]] = [:]
+        for event in eventService.eventSummaries(from: start, to: end) {
+            // The days an event touches run on from the one it starts on.
+            var day = max(calendar.startOfDay(for: event.start), start)
+            while day < end, event.overlaps(day: day, calendar: calendar) {
+                byDay[day, default: []].append(event)
+                guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+                day = next
+            }
+        }
+        gridEventsByDay = byDay
     }
 
     /// Loads the longest agenda the settings allow, so changing the length needs no refetch.
@@ -358,6 +394,9 @@ final class AppState {
         }
         let previous = now
         now = current
+        // Every quarter hour, so a newly added account reaches the menu bar even if the calendar isn't opened.
+        let checkCalendars = calendar.component(.minute, from: now) % 15 == 0 || eventService.access != access
+        if checkCalendars, refreshCalendars() { return }
         if !calendar.isDate(previous, inSameDayAs: now) || now.timeIntervalSince(previous) > 120 {
             reload()
         }

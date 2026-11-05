@@ -3,6 +3,7 @@ import SwiftUI
 /// Answers to common questions, one expandable row each.
 struct HelpSettingsTab: View {
 
+    @Environment(AppState.self) private var appState
     @State private var expanded: Set<String> = []
 
     var body: some View {
@@ -35,6 +36,9 @@ struct HelpSettingsTab: View {
             }
 
             Section {
+                LabeledContent("New to Orbit?") {
+                    Button("Take the Tour") { appState.showWelcomeTour() }
+                }
                 LabeledContent("Still stuck?") {
                     Link("Ask on GitHub", destination: URL(string: "https://github.com/janakjobanputra/orbit/issues")!)
                         .foregroundStyle(Color.orbitTeal)
