@@ -36,9 +36,11 @@ struct OnboardingView: View {
         .frame(width: 720, height: 560)
         .tint(.orbitTeal)
         .background(Color(nsColor: .windowBackgroundColor))
-        .task {
+        // Made again on each page, so the sample day is laid out around now however long the tour has been open.
+        .task(id: step) {
             let state = AppState(preferences: appState.preferences, eventService: DemoEventStore())
             await state.start()
+            demo?.stop()
             demo = state
         }
         .onDisappear { demo?.stop() }
@@ -445,11 +447,22 @@ private struct PopoverPreview: View {
     }
 }
 
-/// A strip of menu bar with Orbit in it, showing the style you've picked with sample events.
-private struct MenuBarMock: View {
+/// A strip of menu bar with Orbit in it, showing the style you've picked.
+struct MenuBarMock: View {
 
     @Environment(AppState.self) private var appState
     let demo: AppState?
+
+    /// The title with a made-up meeting a few minutes away, so the styles that show your next meeting always have
+    /// one to show, however long the tour has been open.
+    static func sampleTitle(_ preferences: Preferences, now: Date, calendar: Calendar) -> String {
+        let meeting = CalendarEvent(
+            id: "sample", title: "Design review", start: now.addingTimeInterval(12 * 60), end: now.addingTimeInterval(57 * 60),
+            isAllDay: false, calendarID: "sample", color: .fallback, location: nil, meetingURL: nil
+        )
+        return MenuBarFormatter(format: preferences.menuBarFormat, leadMinutes: max(preferences.nextEventLeadMinutes, 15), calendar: calendar)
+            .title(now: now, events: [meeting])
+    }
 
     var body: some View {
         HStack(spacing: 16) {
@@ -464,10 +477,12 @@ private struct MenuBarMock: View {
                 if appState.preferences.menuBarFormat.isIconOnly {
                     Image(nsImage: MenuBarIcon.image).renderingMode(.template)
                 } else {
-                    Text(demo?.menuBarTitle ?? appState.menuBarTitle)
-                        .font(.system(size: NSFont.systemFontSize).monospacedDigit())
-                        .lineLimit(1)
-                        .fixedSize()
+                    TimelineView(.everyMinute) { context in
+                        Text(Self.sampleTitle(appState.preferences, now: context.date, calendar: appState.calendar))
+                            .font(.system(size: NSFont.systemFontSize).monospacedDigit())
+                            .lineLimit(1)
+                            .fixedSize()
+                    }
                 }
             }
             .padding(.horizontal, 10)
