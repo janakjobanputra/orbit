@@ -8,73 +8,45 @@ struct CalendarsSettingsTab: View {
     var body: some View {
         @Bindable var preferences = appState.preferences
 
-        Form {
-            Section("Help") {
-                DisclosureGroup(isExpanded: $isHelpExpanded) {
+        SettingsPage {
+            SettingsSection("Help") {
+                SettingsDisclosureRow(question: "Why don't I see my events?", isExpanded: $isHelpExpanded) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Orbit shows the calendars your Mac already syncs. Add Google, Exchange or other accounts in System Settings › Internet Accounts, then turn their calendars on below.")
                         Text("If no calendars appear at all, Orbit may not have calendar access.")
                         HStack {
-                            Button("Internet Accounts") {
-                                open("x-apple.systempreferences:com.apple.Internet-Accounts-Settings.extension")
-                            }
-                            Button("Privacy Settings") {
-                                open("x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars")
-                            }
+                            Button("Internet Accounts") { NSWorkspace.shared.open(SystemSettingsPane.internetAccounts) }
+                            Button("Privacy Settings") { NSWorkspace.shared.open(SystemSettingsPane.calendarPrivacy) }
                         }
                     }
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 4)
-                } label: {
-                    // The whole row toggles, not just the chevron.
-                    Button {
-                        withAnimation { isHelpExpanded.toggle() }
-                    } label: {
-                        Text("Why don't I see my events?")
-                            .foregroundStyle(.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
                 }
             }
 
-            Section("Default calendar") {
-                Picker(selection: $preferences.defaultCalendarID) {
+            SettingsSection("Default calendar") {
+                SettingsMenuPicker(title: "New events go to", selection: $preferences.defaultCalendarID) {
                     Text("System default").tag(String?.none)
                     ForEach(appState.writableCalendars) { info in
                         Text("\(info.title) (\(info.sourceTitle))").tag(Optional(info.id))
                     }
-                } label: {
-                    Text("New events go to")
                 }
             }
 
-            Section {
-                TextField("Ignore titles containing", text: $preferences.ignoredTitleKeywords, prompt: Text("daycare, school run"))
-            } header: {
-                Text("Event filters")
-            } footer: {
-                Text("Comma-separated words. Matching events are hidden from the menu bar and the agenda.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            SettingsSection("Event filters", footer: "Comma-separated words. Matching events are hidden from the menu bar and the agenda.") {
+                SettingsRow(title: "Ignore titles containing") {
+                    TextField("Ignore titles containing", text: $preferences.ignoredTitleKeywords, prompt: Text("daycare, school run"))
+                        .labelsHidden()
+                        .frame(width: 220)
+                }
             }
 
-            Section("Maps") {
-                Picker("Open locations in", selection: $preferences.mapsProvider) {
+            SettingsSection("Maps") {
+                SettingsSegmentedPicker(title: "Open locations in", selection: $preferences.mapsProvider) {
                     ForEach(MapsProvider.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
             }
 
             CalendarListSection()
         }
-        .formStyle(.grouped)
-    }
-
-    private func open(_ string: String) {
-        if let url = URL(string: string) { NSWorkspace.shared.open(url) }
     }
 }
 
@@ -88,15 +60,23 @@ private struct CalendarListSection: View {
         let selected = calendars.filter { preferences.isCalendarVisible($0.id) }.count
         let sources = Dictionary(grouping: calendars, by: \.sourceTitle).sorted { $0.key < $1.key }
 
-        Section {
-            if calendars.isEmpty {
-                Text("No calendars available")
+        SettingsSection(title: "Show calendars") {
+            HStack(spacing: 8) {
+                Text("\(selected) of \(calendars.count) selected")
                     .foregroundStyle(.secondary)
+                Button("All") { preferences.showAllCalendars() }
+                Button("None") { preferences.hideAllCalendars(calendars.map(\.id)) }
+            }
+            .buttonStyle(.link)
+        } content: {
+            if calendars.isEmpty {
+                SettingsRow(title: "No calendars available") { EmptyView() }
             }
             ForEach(sources, id: \.key) { source, group in
                 Text(source.uppercased())
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 ForEach(group) { info in
                     Toggle(isOn: Binding(
                         get: { preferences.isCalendarVisible(info.id) },
@@ -109,18 +89,9 @@ private struct CalendarListSection: View {
                             Text(info.title)
                         }
                     }
+                    .toggleStyle(.switch)
                 }
             }
-        } header: {
-            HStack {
-                Text("Show calendars")
-                Spacer()
-                Text("\(selected) of \(calendars.count) selected")
-                    .foregroundStyle(.secondary)
-                Button("All") { preferences.showAllCalendars() }
-                Button("None") { preferences.hideAllCalendars(calendars.map(\.id)) }
-            }
-            .buttonStyle(.link)
         }
     }
 }

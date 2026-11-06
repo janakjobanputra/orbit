@@ -4,48 +4,37 @@ import SwiftUI
 struct HelpSettingsTab: View {
 
     @Environment(AppState.self) private var appState
+    @Environment(SettingsNavigation.self) private var navigation: SettingsNavigation?
     @State private var expanded: Set<String> = []
 
     var body: some View {
-        Form {
+        SettingsPage {
             ForEach(HelpTopic.Group.allCases) { group in
-                Section(group.rawValue) {
+                SettingsSection(group.rawValue) {
                     ForEach(HelpTopic.topics(in: group)) { topic in
-                        DisclosureGroup(isExpanded: binding(for: topic)) {
-                            Text(topic.answer)
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
-                                .textSelection(.enabled)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 4)
-                        } label: {
-                            // The whole row toggles, not just the chevron.
-                            Button {
-                                withAnimation { binding(for: topic).wrappedValue.toggle() }
-                            } label: {
-                                Text(topic.question)
-                                    .foregroundStyle(.primary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
+                        SettingsDisclosureRow(question: topic.question, isExpanded: binding(for: topic)) {
+                            Text(topic.answer).textSelection(.enabled)
                         }
                     }
                 }
             }
 
-            Section {
-                LabeledContent("New to Orbit?") {
+            SettingsSection {
+                SettingsRow(title: "New to Orbit?") {
                     Button("Take the Tour") { appState.showWelcomeTour() }
                 }
-                LabeledContent("Still stuck?") {
+                SettingsRow(title: "Still stuck?") {
                     Link("Ask on GitHub", destination: URL(string: "https://github.com/janakjobanputra/orbit/issues")!)
                         .foregroundStyle(Color.orbitTeal)
                 }
             }
         }
-        .formStyle(.grouped)
+        // A search result for a question opens its answer.
+        .task(id: navigation?.requestedHelpQuestion) {
+            guard let question = navigation?.requestedHelpQuestion else { return }
+            expanded.insert(question)
+            navigation?.requestedHelpQuestion = nil
+        }
     }
 
     private func binding(for topic: HelpTopic) -> Binding<Bool> {

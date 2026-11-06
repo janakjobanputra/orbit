@@ -7,69 +7,57 @@ struct DisplaySettingsTab: View {
     var body: some View {
         @Bindable var preferences = appState.preferences
 
-        Form {
+        SettingsPage {
             MenuBarSection()
 
-            Section("Calendar display") {
-                Toggle("Day summary", isOn: $preferences.showDaySummary)
-                Toggle(isOn: $preferences.showFreeTime) {
-                    Text("Show free time")
-                    Text("Gaps of 30 minutes or more between 9am and 6pm.")
-                }
-                Toggle("Year progress bar", isOn: $preferences.showYearProgress)
-                Toggle("Day progress bar", isOn: $preferences.showDayProgress)
-                Toggle("Week numbers", isOn: $preferences.showWeekNumbers)
-                Toggle("Highlight today", isOn: $preferences.highlightToday)
-                Toggle("Dim weekends", isOn: $preferences.dimWeekends)
-                Toggle("Event dots", isOn: Binding(
+            SettingsSection("Calendar display") {
+                SettingsToggle("Day summary", isOn: $preferences.showDaySummary)
+                SettingsToggle("Show free time", detail: "Gaps of 30 minutes or more between 9am and 6pm.", isOn: $preferences.showFreeTime)
+                SettingsToggle("Year progress bar", isOn: $preferences.showYearProgress)
+                SettingsToggle("Day progress bar", isOn: $preferences.showDayProgress)
+                SettingsToggle("Week numbers", isOn: $preferences.showWeekNumbers)
+                SettingsToggle("Highlight today", isOn: $preferences.highlightToday)
+                SettingsToggle("Dim weekends", isOn: $preferences.dimWeekends)
+                SettingsToggle("Event dots", isOn: Binding(
                     get: { preferences.eventDots != .off },
                     set: { preferences.eventDots = $0 ? .colors : .off }
                 ))
                 if preferences.eventDots != .off {
-                    Picker("Dot style", selection: $preferences.eventDots) {
+                    SettingsMenuPicker(title: "Dot style", selection: $preferences.eventDots) {
                         ForEach(EventDotsStyle.onStyles) { Text($0.label).tag($0) }
                     }
                 }
-                Picker("Week starts on", selection: $preferences.weekStart) {
+                SettingsSegmentedPicker(title: "Week starts on", selection: $preferences.weekStart) {
                     ForEach(WeekStart.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
             }
 
-            Section("Layout") {
-                Picker("Events view", selection: $preferences.eventsView) {
+            SettingsSection("Layout") {
+                SettingsSegmentedPicker(title: "Events view", selection: $preferences.eventsView) {
                     ForEach(EventsView.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
-                Picker("Text size", selection: $preferences.textSize) {
+                SettingsSegmentedPicker(title: "Text size", selection: $preferences.textSize) {
                     ForEach(TextSize.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
-                Picker("Calendar", selection: $preferences.calendarDensity) {
+                SettingsSegmentedPicker(title: "Calendar", selection: $preferences.calendarDensity) {
                     ForEach(Density.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
-                Picker("Events", selection: $preferences.eventDensity) {
+                SettingsSegmentedPicker(title: "Events", selection: $preferences.eventDensity) {
                     ForEach(Density.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
                 if preferences.eventsView == .agenda {
-                    Picker("Agenda days", selection: $preferences.agendaDayCount) {
+                    SettingsMenuPicker(title: "Agenda days", selection: $preferences.agendaDayCount) {
                         ForEach(Preferences.agendaDayOptions, id: \.self) { count in
                             Text(count == 1 ? "1 day" : "\(count) days").tag(count)
                         }
                     }
-                    Toggle("Hide empty days", isOn: $preferences.hideEmptyDays)
+                    SettingsToggle("Hide empty days", isOn: $preferences.hideEmptyDays)
                 }
-                Toggle("Hide all-day events", isOn: $preferences.hideAllDayEvents)
-                Toggle("Hide past events", isOn: $preferences.hidePastEvents)
-                Toggle(isOn: $preferences.showDeclinedEvents) {
-                    Text("Show declined events")
-                    Text("Crossed out. Invitations you haven't answered or said maybe to are always shown, marked as such.")
-                }
+                SettingsToggle("Hide all-day events", isOn: $preferences.hideAllDayEvents)
+                SettingsToggle("Hide past events", isOn: $preferences.hidePastEvents)
+                SettingsToggle("Show declined events", detail: "Crossed out. Invitations you haven't answered or said maybe to are always shown, marked as such.", isOn: $preferences.showDeclinedEvents)
             }
         }
-        .formStyle(.grouped)
     }
 }
 
@@ -81,12 +69,9 @@ private struct MenuBarSection: View {
         @Bindable var preferences = appState.preferences
         let format = preferences.menuBarFormat
 
-        Section("Menu bar") {
-            Picker(selection: $preferences.menuBarFormat.preset) {
+        SettingsSection("Menu bar") {
+            SettingsMenuPicker(title: "Style", detail: format.preset.summary, selection: $preferences.menuBarFormat.preset) {
                 ForEach(MenuBarPreset.allCases) { Text($0.label).tag($0) }
-            } label: {
-                Text("Style")
-                Text(format.preset.summary)
             }
 
             if format.preset == .custom {
@@ -94,7 +79,7 @@ private struct MenuBarSection: View {
             }
 
             if format.tokens.contains(.date) {
-                Picker("Date format", selection: $preferences.menuBarFormat.datePattern) {
+                SettingsMenuPicker(title: "Date format", selection: $preferences.menuBarFormat.datePattern) {
                     ForEach(datePatternOptions(current: format.datePattern), id: \.self) { pattern in
                         Text(sample(for: pattern)).tag(pattern)
                     }
@@ -102,7 +87,7 @@ private struct MenuBarSection: View {
             }
 
             if format.tokens.contains(.time) {
-                LabeledContent("Time format") {
+                SettingsRow(title: "Time format") {
                     VStack(alignment: .trailing, spacing: 4) {
                         TextField("Time format", text: $preferences.menuBarFormat.timePattern, prompt: Text(MenuBarFormat.defaultTimePattern))
                             .font(.body.monospaced())
@@ -114,26 +99,25 @@ private struct MenuBarSection: View {
                             .foregroundStyle(Color.orbitTeal)
                     }
                 }
-                Picker("Clock", selection: Binding(
+                SettingsSegmentedPicker(title: "Clock", selection: Binding(
                     get: { preferences.menuBarFormat.uses24HourTime },
                     set: { preferences.menuBarFormat.setUses24HourTime($0) }
                 )) {
                     Text("12h").tag(false)
                     Text("24h").tag(true)
                 }
-                .pickerStyle(.segmented)
             }
 
             if format.tokens.count > 1 {
-                Picker("Separator", selection: $preferences.menuBarFormat.separator) {
+                SettingsSegmentedPicker(title: "Separator", selection: $preferences.menuBarFormat.separator) {
                     ForEach(SeparatorStyle.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
             }
 
             if format.tokens.contains(.nextEvent) {
-                Stepper(value: $preferences.nextEventLeadMinutes, in: 5...120, step: 5) {
-                    Text("Show the next event \(preferences.nextEventLeadMinutes) minutes before it starts")
+                SettingsRow(title: "Show the next event \(preferences.nextEventLeadMinutes) minutes before it starts") {
+                    Stepper("Lead time", value: $preferences.nextEventLeadMinutes, in: 5...120, step: 5)
+                        .labelsHidden()
                 }
             }
         }

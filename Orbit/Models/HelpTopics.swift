@@ -97,6 +97,11 @@ struct HelpTopic: Identifiable, Hashable {
         // Orbit itself
         HelpTopic(
             group: .appAndPrivacy,
+            question: "How do I back up my settings or move them to another Mac?",
+            answer: "Open Backup in Settings and choose Export to save a JSON file, then Import on the other Mac. Hidden calendars are matched by account and name, so they carry over even though their IDs differ between Macs. The file contains your settings and calendar names, but no events."
+        ),
+        HelpTopic(
+            group: .appAndPrivacy,
             question: "Does Orbit send my calendar anywhere?",
             answer: "No. Orbit reads your events on your Mac and has no account, server or analytics. The only thing it fetches is a once-a-day check on GitHub for a new version, which you can turn off under General › Updates."
         ),

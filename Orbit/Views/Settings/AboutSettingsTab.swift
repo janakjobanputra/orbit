@@ -32,6 +32,7 @@ struct AboutSettingsTab: View {
                 .foregroundStyle(Color.orbitTeal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .controlBackgroundColor))
     }
 }
 

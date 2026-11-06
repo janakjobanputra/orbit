@@ -11,36 +11,35 @@ struct GeneralSettingsTab: View {
     var body: some View {
         @Bindable var preferences = appState.preferences
 
-        Form {
-            Section("Startup") {
-                Toggle("Launch at login", isOn: $launchAtLogin)
+        SettingsPage {
+            SettingsSection("Startup") {
+                SettingsToggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
                 if let launchError {
                     Text(launchError)
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
-                Toggle(isOn: $preferences.keepCalendarOnTop) {
-                    Text("Keep calendar on top")
-                    Text("The calendar stays open until you click the menu bar item again.")
-                }
+                SettingsToggle("Keep calendar on top", detail: "The calendar stays open until you click the menu bar item again.", isOn: $preferences.keepCalendarOnTop)
             }
 
-            Section("Theme") {
-                Picker("Appearance", selection: $preferences.appearance) {
+            SettingsSection("Theme") {
+                SettingsSegmentedPicker(title: "Appearance", selection: $preferences.appearance) {
                     ForEach(AppearanceMode.allCases) { Text($0.label).tag($0) }
                 }
-                .pickerStyle(.segmented)
             }
 
-            Section("Shortcuts") {
-                Toggle("Enable global shortcuts", isOn: $preferences.globalShortcutsEnabled)
-                Group {
-                    KeyboardShortcuts.Recorder("Toggle calendar", name: .toggleCalendar)
-                    KeyboardShortcuts.Recorder("Join next meeting", name: .joinNextMeeting)
+            SettingsSection("Shortcuts") {
+                SettingsToggle("Enable global shortcuts", isOn: $preferences.globalShortcutsEnabled)
+                SettingsRow(title: "Toggle calendar") {
+                    KeyboardShortcuts.Recorder(for: .toggleCalendar)
+                        .disabled(!preferences.globalShortcutsEnabled)
                 }
-                .disabled(!preferences.globalShortcutsEnabled)
-                LabeledContent("Calendar shortcuts") {
+                SettingsRow(title: "Join next meeting") {
+                    KeyboardShortcuts.Recorder(for: .joinNextMeeting)
+                        .disabled(!preferences.globalShortcutsEnabled)
+                }
+                SettingsRow(title: "Calendar shortcuts") {
                     Button("Show…") { isShowingShortcuts = true }
                         .popover(isPresented: $isShowingShortcuts, arrowEdge: .trailing) {
                             ShortcutsHelpView()
@@ -48,16 +47,12 @@ struct GeneralSettingsTab: View {
                 }
             }
 
-            Section("Updates") {
-                Toggle(isOn: $preferences.checkForUpdates) {
-                    Text("Check for updates automatically")
-                    Text("Once a day, Orbit asks GitHub for the latest version. Nothing about you or your calendar is sent.")
-                }
+            SettingsSection("Updates") {
+                SettingsToggle("Check for updates automatically", detail: "Once a day, Orbit asks GitHub for the latest version. Nothing about you or your calendar is sent.", isOn: $preferences.checkForUpdates)
             }
 
             CustomVideoServicesSection()
         }
-        .formStyle(.grouped)
         .onAppear { launchAtLogin = LaunchAtLogin.isEnabled }
     }
 
@@ -110,9 +105,9 @@ private struct CustomVideoServicesSection: View {
 
     var body: some View {
         let preferences = appState.preferences
-        Section {
+        SettingsSection("Custom video services", footer: "Links to these domains in an event's URL, location or notes get a Join button.") {
             ForEach(preferences.customVideoServices) { service in
-                LabeledContent {
+                SettingsRow(title: service.name, detail: service.host) {
                     Button("Remove", systemImage: "minus.circle.fill", role: .destructive) {
                         preferences.customVideoServices.removeAll { $0.id == service.id }
                         appState.reload()
@@ -121,25 +116,14 @@ private struct CustomVideoServicesSection: View {
                     .buttonStyle(.borderless)
                     .foregroundStyle(.secondary)
                     .help("Remove \(service.name)")
-                } label: {
-                    Text(service.name)
-                    Text(service.host)
                 }
             }
-            LabeledContent {
+            SettingsRow(
+                title: preferences.customVideoServices.isEmpty ? "No custom services" : "Add another",
+                detail: preferences.customVideoServices.isEmpty ? "Zoom, Meet, Teams, Webex and others are built in." : nil
+            ) {
                 Button("Add Service…") { isAdding = true }
-            } label: {
-                if preferences.customVideoServices.isEmpty {
-                    Text("No custom services")
-                    Text("Zoom, Meet, Teams, Webex and others are built in.")
-                }
             }
-        } header: {
-            Text("Custom video services")
-        } footer: {
-            Text("Links to these domains in an event's URL, location or notes get a Join button.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
         }
         .sheet(isPresented: $isAdding) {
             AddVideoServiceSheet { service in

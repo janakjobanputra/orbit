@@ -105,6 +105,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.title = "Orbit Settings"
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
             window.toolbarStyle = .unified
+            // The toolbar draws the page's title and subtitle itself, on two lines.
+            window.titleVisibility = .hidden
             window.isReleasedWhenClosed = false
             window.contentMinSize = NSSize(width: 900, height: 700)
             window.setContentSize(NSSize(width: 1000, height: 860))

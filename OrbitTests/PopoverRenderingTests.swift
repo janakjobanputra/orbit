@@ -467,6 +467,55 @@ final class PopoverRenderingTests: XCTestCase {
         }
     }
 
+    /// Each Settings pane in the full window, light and dark, to check the sidebar, sections and switches.
+    func testSettingsPanes() async {
+        let state = await StateFixture.make { store, preferences in
+            store.calendarList = [
+                StateFixture.calendarInfo("work", source: "Google"),
+                StateFixture.calendarInfo("home"),
+                StateFixture.calendarInfo("family"),
+            ]
+            preferences.showYearProgress = true
+        }.state
+        UserDefaults.standard.removeObject(forKey: "settingsPane")
+        defer { UserDefaults.standard.removeObject(forKey: "settingsPane") }
+        for scheme in [ColorScheme.light, .dark] {
+            for pane in SettingsPane.allCases where scheme == .light || pane == .general {
+                UserDefaults.standard.set(pane.rawValue, forKey: "settingsPane")
+                let root = SettingsView()
+                    .environment(state)
+                    .environment(\.colorScheme, scheme)
+                    .environment(\.controlActiveState, .key)
+                    .environment(\.timeZone, TestSupport.utc)
+                    .frame(width: 1000, height: 860)
+                let host = NSHostingView(rootView: root)
+                host.frame.size = CGSize(width: 1000, height: 860)
+                let window = NSWindow(contentRect: host.frame, styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
+                window.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
+                window.contentView = host
+                try? await Task.sleep(for: .milliseconds(300))
+                attach(snapshot(host), "Settings \(pane.rawValue) (\(scheme == .dark ? "dark" : "light"))")
+            }
+        }
+    }
+
+    /// The sidebar on its own: offscreen, the split view doesn't draw its material or anything on it.
+    func testSettingsSidebar() {
+        for scheme in [ColorScheme.light, .dark] {
+            let root = SettingsSidebar(navigation: SettingsNavigation(pane: .general))
+                .tint(.orbitTeal)
+                .environment(\.colorScheme, scheme)
+                .frame(width: 210, height: 420)
+                .background(scheme == .dark ? Color(white: 0.17) : Color(white: 0.93))
+            let host = NSHostingView(rootView: root)
+            host.frame.size = CGSize(width: 210, height: 420)
+            let window = NSWindow(contentRect: host.frame, styleMask: [.titled], backing: .buffered, defer: false)
+            window.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
+            window.contentView = host
+            attach(snapshot(host), "Settings sidebar (\(scheme == .dark ? "dark" : "light"))")
+        }
+    }
+
     /// Settings › Display with the Icon style picked, to check the menu bar section isn't crowded.
     func testDisplayPane() async {
         let state = await makeState()

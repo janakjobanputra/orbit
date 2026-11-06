@@ -1,95 +1,203 @@
 import SwiftUI
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, display, calendars, help, about
+    case general, display, calendars, backup, help, about
 
     var id: Self { self }
+
+    /// How the sidebar lists them.
+    static let groups: [(heading: String?, panes: [SettingsPane])] = [
+        (nil, [.general, .display, .calendars]),
+        ("Manage", [.backup, .help]),
+        (nil, [.about]),
+    ]
 
     var title: String {
         switch self {
         case .general: "General"
         case .display: "Display"
         case .calendars: "Calendars"
+        case .backup: "Backup"
         case .help: "Help"
         case .about: "About"
         }
     }
 
-    var symbol: String {
+    /// Under the title in the window's toolbar.
+    var subtitle: String {
         switch self {
-        case .general: "gearshape.fill"
-        case .display: "menubar.rectangle"
-        case .calendars: "calendar"
-        case .help: "questionmark"
-        case .about: "info"
+        case .general: "Startup, theme and shortcuts"
+        case .display: "Menu bar, calendar and layout"
+        case .calendars: "What shows, and where new events go"
+        case .backup: "Export and import your settings"
+        case .help: "Answers to common questions"
+        case .about: "Version and updates"
         }
     }
 
-    var tint: Color {
+    var symbol: String {
         switch self {
-        case .general: .gray
-        case .display: .blue
-        case .calendars: .red
-        case .help: .orange
-        case .about: .indigo
+        case .general: "gearshape"
+        case .display: "menubar.rectangle"
+        case .calendars: "calendar"
+        case .backup: "arrow.up.arrow.down.circle"
+        case .help: "questionmark.circle"
+        case .about: "info.circle"
         }
     }
 }
 
-/// System Settings–style window: sidebar, grouped form, and a live preview in the inspector.
+/// Sidebar, sections of settings, and a live preview in the inspector.
 struct SettingsView: View {
 
     @AppStorage("settingsPane") private var savedPane: SettingsPane = .general
-    /// Kept in State so a `-settingsPane` launch argument only picks the starting pane. Arguments override
-    /// UserDefaults for the whole run, so reading the selection straight from storage would pin it there.
-    @State private var pane: SettingsPane?
-
-    private var currentPane: SettingsPane { pane ?? savedPane }
+    /// Only the starting page comes from storage. A `-settingsPane` launch argument overrides UserDefaults for
+    /// the whole run, so reading the page straight from storage would pin it there.
+    @State private var navigation = SettingsNavigation(
+        pane: UserDefaults.standard.string(forKey: "settingsPane").flatMap(SettingsPane.init(rawValue:)) ?? .general
+    )
 
     var body: some View {
         NavigationSplitView {
-            List(SettingsPane.allCases, selection: Binding(get: { currentPane }, set: { if let new = $0 { pane = new; savedPane = new } })) { pane in
-                Label {
-                    Text(pane.title)
-                } icon: {
-                    SettingsIcon(symbol: pane.symbol, tint: pane.tint)
-                }
-                .tag(pane)
-            }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
+            SettingsSidebar(navigation: navigation)
+                .navigationSplitViewColumnWidth(min: 190, ideal: 210, max: 250)
         } detail: {
-            Group {
-                switch currentPane {
-                case .general: GeneralSettingsTab()
-                case .display: DisplaySettingsTab()
-                case .calendars: CalendarsSettingsTab()
-                case .help: HelpSettingsTab()
-                case .about: AboutSettingsTab()
+            // The page changes inside one steady view. Hung on the page itself, these modifiers would apply to each
+            // page separately, and the preview would be rebuilt, visibly, every time you changed page.
+            SettingsPageContent(navigation: navigation)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .navigationTitle(navigation.pane.title)
+                .toolbar(removing: .title)
+                .toolbar { SettingsToolbar(navigation: navigation) }
+                .inspector(isPresented: .constant(true)) {
+                    SettingsPreview()
+                        .interactiveDismissDisabled()
                 }
-            }
-            .navigationTitle(currentPane.title)
-            .inspector(isPresented: .constant(true)) {
-                SettingsPreview()
-                    .interactiveDismissDisabled()
-            }
         }
+        .environment(navigation)
+        .onChange(of: navigation.pane) { _, pane in savedPane = pane }
         .frame(minWidth: 900, idealWidth: 1000, minHeight: 700, idealHeight: 860)
         .tint(.orbitTeal)
     }
 }
 
-/// White glyph on a coloured rounded square, as in System Settings.
-private struct SettingsIcon: View {
+/// The open page, or search results while there's a search. Swaps instantly rather than animating.
+private struct SettingsPageContent: View {
 
-    let symbol: String
-    let tint: Color
+    let navigation: SettingsNavigation
 
     var body: some View {
-        Image(systemName: symbol)
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(width: 20, height: 20)
-            .background(tint.gradient, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+        Group {
+            if navigation.isSearching {
+                SettingsSearchResults()
+            } else {
+                switch navigation.pane {
+                case .general: GeneralSettingsTab()
+                case .display: DisplaySettingsTab()
+                case .calendars: CalendarsSettingsTab()
+                case .backup: BackupSettingsTab()
+                case .help: HelpSettingsTab()
+                case .about: AboutSettingsTab()
+                }
+            }
+        }
+        .transaction { $0.animation = nil }
+    }
+}
+
+/// Back and forward, then the page's title with its subtitle underneath.
+private struct SettingsToolbar: ToolbarContent {
+
+    let navigation: SettingsNavigation
+
+    var body: some ToolbarContent {
+        ToolbarItemGroup(placement: .navigation) {
+            Button("Back", systemImage: "chevron.left") { navigation.goBack() }
+                .keyboardShortcut("[")
+                .disabled(!navigation.canGoBack)
+                .help("Back")
+            Button("Forward", systemImage: "chevron.right") { navigation.goForward() }
+                .keyboardShortcut("]")
+                .disabled(!navigation.canGoForward)
+                .help("Forward")
+        }
+        titleItem
+    }
+
+    /// On macOS 26 toolbar items sit on glass, which a heading shouldn't.
+    @ToolbarContentBuilder
+    private var titleItem: some ToolbarContent {
+        if #available(macOS 26, *) {
+            ToolbarItem(placement: .navigation) { SettingsTitle(navigation: navigation) }
+                .sharedBackgroundVisibility(.hidden)
+        } else {
+            ToolbarItem(placement: .navigation) { SettingsTitle(navigation: navigation) }
+        }
+    }
+}
+
+private struct SettingsTitle: View {
+
+    let navigation: SettingsNavigation
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(navigation.isSearching ? "Search" : navigation.pane.title)
+                .font(.system(size: 13, weight: .semibold))
+            Text(navigation.isSearching ? "Results for “\(navigation.query)”" : navigation.pane.subtitle)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+        }
+        .lineLimit(1)
+        .padding(.leading, 6)
+        // One width for every page, so the toolbar doesn't shift as the title changes.
+        .frame(width: 300, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// What the search field found, in place of the page, until you pick one or clear the search.
+private struct SettingsSearchResults: View {
+
+    @Environment(SettingsNavigation.self) private var navigation
+
+    var body: some View {
+        let results = SettingsSearch.results(for: navigation.query)
+        if results.isEmpty {
+            ContentUnavailableView.search(text: navigation.query)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(nsColor: .controlBackgroundColor))
+        } else {
+            SettingsPage {
+                SettingsSection(results.count == 1 ? "1 result" : "\(results.count) results") {
+                    ForEach(results) { result in
+                        Button {
+                            navigation.open(result)
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: result.pane.symbol)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(result.title)
+                                        .foregroundStyle(.primary)
+                                        .multilineTextAlignment(.leading)
+                                    Text(result.location)
+                                        .font(.callout)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer(minLength: 0)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
     }
 }
 
