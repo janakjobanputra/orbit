@@ -20,6 +20,8 @@ final class SettingsFileTests: XCTestCase {
         p.appearance = .dark
         p.globalShortcutsEnabled = false
         p.checkForUpdates = false
+        p.shareUsageStats = true
+        p.sendCrashReports = false
         p.customVideoServices = [CustomVideoService(name: "Acme", host: "meet.acme.com")]
         p.menuBarFormat.preset = .custom
         p.menuBarFormat.customTokens = [.weekNumber, .time]

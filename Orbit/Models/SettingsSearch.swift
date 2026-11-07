@@ -66,6 +66,8 @@ enum SettingsSearch {
         entry(.general, "Shortcuts", "Join next meeting", keywords: "shortcut hotkey keyboard video call"),
         entry(.general, "Shortcuts", "Calendar shortcuts", keywords: "keyboard hotkey"),
         entry(.general, "Updates", "Check for updates automatically", keywords: "version new release"),
+        entry(.general, "Privacy", "Share anonymous usage stats", "Off unless you turn it on.", keywords: "analytics metrics telemetry data tracking"),
+        entry(.general, "Privacy", "Send crash reports", keywords: "diagnostics bug telemetry data"),
         entry(.general, "Custom video services", "Custom video services", "Links to these domains get a Join button.", keywords: "meeting call zoom meet teams webex"),
 
         entry(.display, "Menu bar", "Style", "Classic, Minimal, Agenda, Info, Icon or Custom.", keywords: "logo clock date time next meeting"),

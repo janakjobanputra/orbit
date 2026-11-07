@@ -28,5 +28,15 @@
     <string>public.app-category.productivity</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+    <key>SUFeedURL</key>
+    <string>https://github.com/janakjobanputra/orbit/releases/latest/download/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>cKqlSjiRTAyLAnoWeVnE++LiN4yy3yBQ1NlLxLtGYEE=</string>
+    <key>SUEnableInstallerLauncherService</key>
+    <true/>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>86400</integer>
 </dict>
 </plist>

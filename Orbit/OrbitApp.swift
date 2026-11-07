@@ -20,7 +20,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
     private var statusItemController: StatusItemController?
     private var settingsWindow: NSWindow?
-    private lazy var updateDialog = UpdateDialogController(updates: appState.updates, preferences: appState.preferences)
+    private var updater: AppUpdater?
+    private var telemetry: Telemetry?
+    private var crashDiagnostics: CrashDiagnostics?
     private lazy var welcomeTour = OnboardingController(appState: appState, record: OnboardingRecord(defaults: .standard)) { [weak self] in
         self?.statusItemController?.togglePopover()
     }
@@ -40,17 +42,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         KeyboardShortcuts.onKeyUp(for: .joinNextMeeting) { [weak self] in
             self?.appState.joinNextMeeting()
         }
+        updater = AppUpdater(state: appState.updates)
         applyPreferences()
-        appState.updates.presentPrompt = { [weak self] release in self?.updateDialog.show(release) }
         appState.showWelcomeTour = { [weak self] in self?.welcomeTour.show() }
         Task { await startWithWelcomeTour() }
-        Task { await checkForUpdatesPeriodically() }
-        // For development: `-PreviewUpdateDialog YES` shows the dialog for the latest release, whatever version this is.
-        if UserDefaults.standard.bool(forKey: "PreviewUpdateDialog") {
-            Task { [weak self] in
-                if let release = try? await GitHubReleaseFetcher().latestRelease() { self?.updateDialog.show(release) }
-            }
-        }
+        startTelemetry()
         // For development: `Orbit.app/Contents/MacOS/Orbit -OpenSettingsOnLaunch YES`.
         if UserDefaults.standard.bool(forKey: "OpenSettingsOnLaunch") {
             showSettings()
@@ -69,24 +65,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
-        appState.stop()
+    /// Release builds only, so working on Orbit never adds to the numbers.
+    private func startTelemetry() {
+        #if !DEBUG
+        let telemetry = Telemetry(appState: appState)
+        self.telemetry = telemetry
+        crashDiagnostics = CrashDiagnostics { crashes in
+            Task { await telemetry.send(crashes) }
+        }
+        Task {
+            // Wakes hourly so a Mac left on is still counted; the report itself goes at most once a day.
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(60))
+                await telemetry.sendUsageIfDue()
+                try? await Task.sleep(for: .seconds(60 * 60))
+            }
+        }
+        #endif
     }
 
-    /// Wakes hourly; the checker itself only contacts GitHub once a day.
-    private func checkForUpdatesPeriodically() async {
-        while !Task.isCancelled {
-            if appState.preferences.checkForUpdates {
-                await appState.updates.checkIfDue()
-            }
-            try? await Task.sleep(for: .seconds(60 * 60))
-        }
+    func applicationWillTerminate(_ notification: Notification) {
+        appState.stop()
     }
 
     /// Applies app-wide preferences now and again whenever they change.
     private func applyPreferences() {
         withObservationTracking {
             SystemIntegration.apply(appState.preferences)
+            updater?.setChecksAutomatically(appState.preferences.checkForUpdates)
         } onChange: { [weak self] in
             Task { @MainActor in self?.applyPreferences() }
         }

@@ -51,6 +51,8 @@ struct GeneralSettingsTab: View {
                 SettingsToggle("Check for updates automatically", detail: "Once a day, Orbit asks GitHub for the latest version. Nothing about you or your calendar is sent.", isOn: $preferences.checkForUpdates)
             }
 
+            PrivacySection()
+
             CustomVideoServicesSection()
         }
         .onAppear { launchAtLogin = LaunchAtLogin.isEnabled }
@@ -64,6 +66,25 @@ struct GeneralSettingsTab: View {
         } catch {
             launchError = "Couldn't change the login item: \(error.localizedDescription)"
             launchAtLogin = LaunchAtLogin.isEnabled
+        }
+    }
+}
+
+private struct PrivacySection: View {
+
+    @Environment(AppState.self) private var appState
+    @State private var isShowingDetails = false
+
+    var body: some View {
+        @Bindable var preferences = appState.preferences
+        SettingsSection("Privacy", footer: "Your events and calendar names are never sent. Neither report includes an ID or anything that identifies you, and your IP address isn't stored.") {
+            SettingsToggle("Share anonymous usage stats", detail: "Once a day: your Orbit and macOS versions and which main options you use.", isOn: $preferences.shareUsageStats)
+            SettingsToggle("Send crash reports", detail: "If Orbit crashes: where in Orbit's code it happened, and your Orbit and macOS versions.", isOn: $preferences.sendCrashReports)
+            SettingsDisclosureRow(question: "See exactly what's in a usage report", isExpanded: $isShowingDetails) {
+                Text(UsageReport(preferences: preferences, calendarCount: appState.calendars.count).readableJSON)
+                    .font(.callout.monospaced())
+                    .textSelection(.enabled)
+            }
         }
     }
 }

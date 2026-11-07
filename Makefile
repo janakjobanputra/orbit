@@ -1,4 +1,4 @@
-.PHONY: generate build test run clean dmg testflight cask
+.PHONY: generate build test run clean dmg testflight cask appcast metrics
 
 generate:
 	xcodegen generate
@@ -19,6 +19,12 @@ clean:
 
 dmg:
 	scripts/release.sh dmg
+
+metrics:
+	scripts/metrics.sh
+
+appcast:
+	scripts/release.sh appcast
 
 testflight:
 	scripts/release.sh testflight

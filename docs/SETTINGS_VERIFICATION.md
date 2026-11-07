@@ -21,7 +21,7 @@ Run everything with `make test`. To look at the rendered popovers, run the tests
 | Join next meeting shortcut | default ⇧⌘J, re-recordable | Behaviour (`testGlobalShortcutDefaults`, `testJoinNextMeetingPicksMeetingInProgressOrNext`, `testJoinStillWorksAfterTheMeetingStarts`); Manual: press it with a meeting coming up | upcoming passes; in progress being rechecked |
 | Calendar shortcuts › Show… | popover list | Manual | pass (manual) |
 | Custom video services | add, remove | Behaviour (`testCustomVideoServiceAddsJoinLinks`, `testCustomServiceHostFromLinkOrDomain`) | pass |
-| Check for updates automatically | on (default), off | Behaviour (`UpdateCheckerTests`: once a day, survives relaunch, manual check, failure); Render (`testUpdateBanner`); Manual: About › Check for Updates against the live GitHub release | automated pass; manual not yet tried |
+| Check for updates automatically | on (default), off | Render (`testUpdateBanner`); Manual: About › Check for Updates against the live release (Sparkle does the checking) | automated pass; manual not yet tried |
 
 ## Display › Menu bar
 

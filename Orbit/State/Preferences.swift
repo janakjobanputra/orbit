@@ -15,6 +15,8 @@ final class Preferences {
         static let globalShortcutsEnabled = "globalShortcutsEnabled"
         static let customVideoServices = "customVideoServices"
         static let checkForUpdates = "checkForUpdates"
+        static let shareUsageStats = "shareUsageStats"
+        static let sendCrashReports = "sendCrashReports"
         static let menuBarFormat = "menuBarFormat"
         static let nextEventLeadMinutes = "nextEventLeadMinutes"
         static let showDaySummary = "showDaySummary"
@@ -52,6 +54,10 @@ final class Preferences {
     var customVideoServices: [CustomVideoService] { didSet { store(customVideoServices, forKey: Key.customVideoServices) } }
     /// Look for a new version on GitHub once a day.
     var checkForUpdates: Bool { didSet { defaults.set(checkForUpdates, forKey: Key.checkForUpdates) } }
+    /// Send anonymous usage stats once a day. Off unless you turn it on.
+    var shareUsageStats: Bool { didSet { defaults.set(shareUsageStats, forKey: Key.shareUsageStats) } }
+    /// Send a report when Orbit crashes. On unless you turn it off.
+    var sendCrashReports: Bool { didSet { defaults.set(sendCrashReports, forKey: Key.sendCrashReports) } }
 
     // MARK: Menu bar
 
@@ -99,6 +105,7 @@ final class Preferences {
         defaults.register(defaults: [
             Key.globalShortcutsEnabled: true,
             Key.checkForUpdates: true,
+            Key.sendCrashReports: true,
             Key.nextEventLeadMinutes: 30,
             Key.showYearProgress: true,
             Key.highlightToday: true,
@@ -112,6 +119,8 @@ final class Preferences {
         globalShortcutsEnabled = defaults.bool(forKey: Key.globalShortcutsEnabled)
         customVideoServices = Self.decoded(defaults, Key.customVideoServices) ?? []
         checkForUpdates = defaults.bool(forKey: Key.checkForUpdates)
+        shareUsageStats = defaults.bool(forKey: Key.shareUsageStats)
+        sendCrashReports = defaults.bool(forKey: Key.sendCrashReports)
 
         menuBarFormat = Self.decoded(defaults, Key.menuBarFormat) ?? MenuBarFormat()
         nextEventLeadMinutes = defaults.integer(forKey: Key.nextEventLeadMinutes)

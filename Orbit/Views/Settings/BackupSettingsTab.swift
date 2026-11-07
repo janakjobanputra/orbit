@@ -43,7 +43,7 @@ struct BackupSettingsTab: View {
                 toggleCalendar: KeyboardShortcuts.getShortcut(for: .toggleCalendar),
                 joinNextMeeting: KeyboardShortcuts.getShortcut(for: .joinNextMeeting)
             ),
-            appVersion: AppVersion.current?.description
+            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         )
         do {
             try file.encoded().write(to: url, options: .atomic)

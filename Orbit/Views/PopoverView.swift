@@ -121,9 +121,9 @@ struct CalendarPanel: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
             }
-            if let release = appState.updates.bannerRelease {
+            if let version = appState.updates.availableVersion {
                 Divider()
-                UpdateBanner(release: release)
+                UpdateBanner(version: version)
             }
         }
     }
@@ -132,16 +132,17 @@ struct CalendarPanel: View {
 /// Shown at the bottom of the calendar when a newer version is out.
 private struct UpdateBanner: View {
 
-    let release: ReleaseInfo
+    @Environment(AppState.self) private var appState
+    let version: String
 
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "arrow.down.circle.fill")
                 .foregroundStyle(Color.orbitTeal)
-            Text("Orbit \(release.version.description) is available")
+            Text("Orbit \(version) is available")
                 .orbitFont(.callout)
             Spacer()
-            Button("Download") { NSWorkspace.shared.open(release.bestURL) }
+            Button("Update…") { appState.updates.checkNow() }
                 .controlSize(.small)
         }
         .padding(.horizontal, 14)

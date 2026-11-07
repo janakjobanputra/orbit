@@ -10,6 +10,9 @@ packages:
   KeyboardShortcuts:
     url: https://github.com/sindresorhus/KeyboardShortcuts
     from: 2.0.0
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.10.0
 
 settings:
   base:
@@ -28,6 +31,7 @@ targets:
       - Orbit
     dependencies:
       - package: KeyboardShortcuts
+      - package: Sparkle
     settings:
       base:
         INFOPLIST_FILE: Orbit/Info.plist
@@ -42,6 +46,10 @@ targets:
         com.apple.security.personal-information.calendars: true
         com.apple.security.network.client: true
         com.apple.security.files.user-selected.read-write: true
+        # Lets the sandboxed app talk to Sparkle's installer, which runs outside the sandbox.
+        com.apple.security.temporary-exception.mach-lookup.global-name:
+          - $(PRODUCT_BUNDLE_IDENTIFIER)-spks
+          - $(PRODUCT_BUNDLE_IDENTIFIER)-spki
   OrbitTests:
     type: bundle.unit-test
     platform: macOS

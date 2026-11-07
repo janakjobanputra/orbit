@@ -284,26 +284,32 @@ private struct MenuBarPage: View {
 
 private struct TipsPage: View {
 
+    @Environment(AppState.self) private var appState
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
 
     var body: some View {
+        @Bindable var preferences = appState.preferences
         VStack(alignment: .leading, spacing: 20) {
             PageHeader(symbol: "sparkles", title: "A few handy things", subtitle: "Orbit stays out of the way until you need it.")
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 Tip(symbol: "keyboard", title: "\(shortcut(.toggleCalendar, fallback: "⇧⌘C")) opens Orbit from anywhere", detail: "Esc closes it again. Change the shortcuts in Settings › General.")
                 Tip(symbol: "video", title: "\(shortcut(.joinNextMeeting, fallback: "⇧⌘J")) joins your next meeting", detail: "Zoom, Meet, Teams, Webex and more, straight from the invitation.")
                 Tip(symbol: "cursorarrow.click.2", title: "Right-click Orbit for Settings and Quit", detail: "Hold ⌘ and drag it to move it along the menu bar.")
-                Tip(symbol: "clock", title: "Two clocks in your menu bar?", detail: "Shrink Apple's clock in System Settings, and let Orbit show the date and time.") {
+                Tip(symbol: "clock", title: "Two clocks in your menu bar?", detail: "Shrink Apple's, and let Orbit show the date and time.") {
                     Button("Clock Options…") { NSWorkspace.shared.open(SystemSettingsPane.clockOptions) }
                 }
             }
             Divider()
-            Toggle("Open Orbit when you log in", isOn: $launchAtLogin)
-                .toggleStyle(.switch)
+            TourSwitch(title: "Open Orbit when you log in", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, enabled in
                     try? LaunchAtLogin.setEnabled(enabled)
                     launchAtLogin = LaunchAtLogin.isEnabled
                 }
+            TourSwitch(title: "Send crash reports, so I can fix what breaks", isOn: $preferences.sendCrashReports)
+            TourSwitch(title: "Share anonymous usage stats", isOn: $preferences.shareUsageStats)
+            Text("Your events are never sent. Change these any time in Settings › General › Privacy.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
             Spacer(minLength: 0)
         }
     }
@@ -411,6 +417,23 @@ private struct Tip<Accessory: View>: View {
             }
             Spacer(minLength: 0)
             accessory
+        }
+    }
+}
+
+/// A switch at the far right of its row, so a stack of them lines up however long each label is.
+private struct TourSwitch: View {
+
+    let title: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        HStack {
+            Text(title)
+            Spacer(minLength: 12)
+            Toggle(title, isOn: $isOn)
+                .toggleStyle(.switch)
+                .labelsHidden()
         }
     }
 }

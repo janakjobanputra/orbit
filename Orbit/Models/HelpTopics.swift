@@ -103,12 +103,17 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .appAndPrivacy,
             question: "Does Orbit send my calendar anywhere?",
-            answer: "No. Orbit reads your events on your Mac and has no account, server or analytics. The only thing it fetches is a once-a-day check on GitHub for a new version, which you can turn off under General › Updates."
+            answer: "No. Orbit reads your events on your Mac, and your events and calendar names are never sent anywhere. There's no account. Three things do use the network, and you can turn each off under Settings › General: a once-a-day check on GitHub for a new version, a crash report if Orbit crashes (on by default), and anonymous usage stats (off unless you turn them on)."
+        ),
+        HelpTopic(
+            group: .appAndPrivacy,
+            question: "What's in crash reports and usage stats?",
+            answer: "A crash report says where in Orbit's code the crash happened, the type of crash, and your Orbit and macOS versions. Usage stats, if you turn them on, say once a day which Orbit and macOS versions you have, your Mac's chip type, and which main options you use, such as Day or Agenda and your menu bar style, plus a rough count of calendars. Neither includes your events, calendar names, an ID or anything that identifies you, and your IP address isn't stored. Settings › General › Privacy shows exactly what a usage report contains."
         ),
         HelpTopic(
             group: .appAndPrivacy,
             question: "How do I update Orbit?",
-            answer: "When a new version is out, Orbit shows a window with its release notes: Download Update gets the new disk image, Remind Me Later asks again tomorrow, and Skip This Version waits for the one after. A Download row also appears at the bottom of the calendar. Check any time under About › Check for Updates. If you installed with Homebrew, run brew upgrade instead."
+            answer: "When a new version is out, Orbit shows a window with its release notes. Install Update downloads it, checks it, and offers Install and Relaunch, so there is no disk image to open. Remind Me Later asks again tomorrow, and Skip This Version waits for the one after. An Update row also appears at the bottom of the calendar. Check any time under About › Check for Updates."
         ),
         HelpTopic(
             group: .appAndPrivacy,

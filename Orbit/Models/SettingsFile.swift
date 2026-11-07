@@ -33,6 +33,8 @@ struct SettingsFile: Codable, Equatable {
         var globalShortcutsEnabled: Bool?
         var shortcuts: Shortcuts?
         var checkForUpdates: Bool?
+        var shareUsageStats: Bool?
+        var sendCrashReports: Bool?
         var customVideoServices: [VideoService]?
         // Menu bar
         var menuBarFormat: MenuBarFormat?
@@ -122,6 +124,8 @@ extension Preferences {
             appearance: appearance.rawValue,
             globalShortcutsEnabled: globalShortcutsEnabled,
             checkForUpdates: checkForUpdates,
+            shareUsageStats: shareUsageStats,
+            sendCrashReports: sendCrashReports,
             customVideoServices: customVideoServices.map { .init(name: $0.name, host: $0.host) },
             menuBarFormat: menuBarFormat,
             nextEventLeadMinutes: nextEventLeadMinutes,
@@ -172,6 +176,8 @@ extension Preferences {
         option(values.appearance) { (value: AppearanceMode) in appearance = value }
         set(values.globalShortcutsEnabled) { globalShortcutsEnabled = $0 }
         set(values.checkForUpdates) { checkForUpdates = $0 }
+        set(values.shareUsageStats) { shareUsageStats = $0 }
+        set(values.sendCrashReports) { sendCrashReports = $0 }
         set(values.customVideoServices) { services in
             customVideoServices = services.compactMap { service in
                 CustomVideoService.normalizedHost(from: service.host).map { CustomVideoService(name: service.name, host: $0) }
