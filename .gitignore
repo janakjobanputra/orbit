@@ -5,3 +5,6 @@ DerivedData/
 .claude/
 dist/
 .wrangler/
+
+# Exported update signing key (docs/RELEASING.md). Never commit it.
+orbit-sparkle-key.txt

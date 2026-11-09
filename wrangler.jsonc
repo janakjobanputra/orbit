@@ -1,5 +1,5 @@
 // Cloudflare deploys the website in site/ from this repo on every push to main.
-// site-worker.js handles /download; everything else is served straight from site/.
+// site-worker.js handles /download and the /api/usage and /api/crash reports; everything else is served straight from site/.
 {
   "name": "orbit",
   "main": "site-worker.js",
@@ -8,6 +8,14 @@
     "directory": "./site",
     "binding": "ASSETS"
   },
+  // Crash reports and opt-in usage stats. The tables are in migrations/; see docs/RELEASING.md.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "orbit-reports",
+      "database_id": "e38ecc62-987c-4ba1-a8fb-ced2aa8761e0"
+    }
+  ],
   "routes": [
     { "pattern": "try-orbit.app", "custom_domain": true },
     { "pattern": "www.try-orbit.app", "custom_domain": true }
