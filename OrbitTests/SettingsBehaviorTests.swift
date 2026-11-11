@@ -511,6 +511,11 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertTrue(preferences.highlightToday)
         XCTAssertTrue(preferences.showMonthGrid)
         XCTAssertEqual(preferences.calendarSpan, .month)
+        XCTAssertTrue(preferences.meetingAlerts)
+        XCTAssertEqual(preferences.meetingAlertLeadMinutes, 1)
+        XCTAssertEqual(preferences.meetingAlertScope, .videoMeetings)
+        XCTAssertTrue(preferences.meetingAlertSound)
+        XCTAssertTrue(preferences.meetingAlertShowsGranola)
         XCTAssertEqual(preferences.eventDots, .colors)
         XCTAssertEqual(preferences.textSize, .standard)
         XCTAssertEqual(preferences.agendaDayCount, 14)
@@ -523,7 +528,7 @@ final class SettingsPersistenceTests: XCTestCase {
         let keyPaths: [ReferenceWritableKeyPath<Preferences, Bool>] = [
             \.keepCalendarOnTop, \.globalShortcutsEnabled, \.showDaySummary, \.showFreeTime, \.showYearProgress,
             \.showDayProgress, \.showWeekNumbers, \.highlightToday, \.dimWeekends, \.showMonthGrid,
-            \.hideEmptyDays, \.hideAllDayEvents, \.hidePastEvents,
+            \.hideEmptyDays, \.hideAllDayEvents, \.hidePastEvents, \.meetingAlerts, \.meetingAlertSound, \.meetingAlertShowsGranola,
         ]
         for keyPath in keyPaths {
             for value in [true, false] {
@@ -538,6 +543,8 @@ final class SettingsPersistenceTests: XCTestCase {
         for value in EventDotsStyle.allCases { reloaded().eventDots = value; XCTAssertEqual(reloaded().eventDots, value) }
         for value in WeekStart.allCases { reloaded().weekStart = value; XCTAssertEqual(reloaded().weekStart, value) }
         for value in CalendarSpan.allCases { reloaded().calendarSpan = value; XCTAssertEqual(reloaded().calendarSpan, value) }
+        for value in MeetingAlertScope.allCases { reloaded().meetingAlertScope = value; XCTAssertEqual(reloaded().meetingAlertScope, value) }
+        for value in MeetingAlertSchedule.leadOptions { reloaded().meetingAlertLeadMinutes = value; XCTAssertEqual(reloaded().meetingAlertLeadMinutes, value) }
         for value in TextSize.allCases { reloaded().textSize = value; XCTAssertEqual(reloaded().textSize, value) }
         for value in Density.allCases {
             reloaded().calendarDensity = value; XCTAssertEqual(reloaded().calendarDensity, value)

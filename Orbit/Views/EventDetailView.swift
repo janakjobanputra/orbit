@@ -109,7 +109,7 @@ struct EventDetailView: View {
     @ViewBuilder
     private var details: some View {
         if let url = event.meetingURL {
-            Button { NSWorkspace.shared.open(url) } label: {
+            Button { appState.openMeeting(url) } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "video.fill")
                         .font(.system(size: 15 * scale))

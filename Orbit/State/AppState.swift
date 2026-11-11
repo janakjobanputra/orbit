@@ -33,6 +33,11 @@ final class AppState {
     private var nearbyEvents: [CalendarEvent] = []
     private var searchPool: [CalendarEvent] = []
 
+    /// Meetings whose alert is showing, soonest first. The app's alert window follows this.
+    private(set) var meetingAlerts: [CalendarEvent] = []
+    /// Occurrences already alerted, so dismissing one doesn't bring it back on the next tick.
+    @ObservationIgnored private var alertedMeetings: Set<String> = []
+
     var mode: Mode = .agenda
     var searchQuery = ""
     /// The event whose detail popout is open, if any.
@@ -272,10 +277,61 @@ final class AppState {
     func joinNextMeeting() {
         refreshNow()
         if let url = nextMeetingURL {
-            NSWorkspace.shared.open(url)
+            openMeeting(url)
         } else {
             NSSound.beep()
         }
+    }
+
+    /// Joins in the call's own app when it's installed, otherwise in the browser. Set by tests to watch what opens.
+    @ObservationIgnored var openMeeting: @MainActor (URL) -> Void = { MeetingOpener.open($0) }
+
+    // MARK: - Meeting alerts
+
+    /// Adds alerts that have come due and drops ones whose meeting has ended. Runs each minute and after a reload.
+    func checkMeetingAlerts() {
+        meetingAlerts.removeAll { $0.end <= now }
+        guard preferences.meetingAlerts, access == .granted else {
+            meetingAlerts = []
+            return
+        }
+        let due = MeetingAlertSchedule.due(
+            visible(nearbyEvents), now: now, leadMinutes: preferences.meetingAlertLeadMinutes,
+            scope: preferences.meetingAlertScope, shown: alertedMeetings
+        )
+        guard !due.isEmpty else { return }
+        alertedMeetings.formUnion(due.map(MeetingAlertSchedule.key))
+        meetingAlerts = (meetingAlerts + due).sorted { ($0.start, $0.title) < ($1.start, $1.title) }
+    }
+
+    /// Settings › Notifications › Show a sample alert, and for development
+    /// `Orbit.app/Contents/MacOS/Orbit -ShowSampleMeetingAlert YES`. Its Join closes the alert without opening anything.
+    func showSampleMeetingAlert() {
+        meetingAlerts.removeAll { $0.id == Self.sampleAlertID }
+        let start = now.addingTimeInterval(60)
+        var event = CalendarEvent(
+            id: Self.sampleAlertID, title: "Sample meeting", start: start, end: start.addingTimeInterval(30 * 60),
+            isAllDay: false, calendarID: "sample", color: EventColor(red: 0.2, green: 0.5, blue: 1), location: nil,
+            meetingURL: URL(string: "https://zoom.us/j/1234567890")
+        )
+        event.guests = [Guest(name: "Sam", response: .accepted)]
+        meetingAlerts.append(event)
+    }
+
+    nonisolated static let sampleAlertID = "sample-alert"
+
+    func dismissAlert(_ event: CalendarEvent) {
+        meetingAlerts.removeAll { $0.id == event.id && $0.start == event.start }
+    }
+
+    func dismissAllAlerts() {
+        meetingAlerts = []
+    }
+
+    /// Join from an alert: opens the call and closes that alert.
+    func join(fromAlert event: CalendarEvent) {
+        if let url = event.meetingURL, event.id != Self.sampleAlertID { openMeeting(url) }
+        dismissAlert(event)
     }
 
     func calendarInfo(for event: CalendarEvent) -> CalendarInfo? {
@@ -324,6 +380,7 @@ final class AppState {
         let today = calendar.startOfDay(for: now)
         nearbyEvents = fetch(from: today, to: today.addingTimeInterval(2 * 86_400))
         reloadAgenda()
+        checkMeetingAlerts()
     }
 
     /// Only the grid changes when you page through it, and it only needs each event's day and colour.
@@ -403,6 +460,7 @@ final class AppState {
         }
         let previous = now
         now = current
+        defer { checkMeetingAlerts() }
         // Every quarter hour, so a newly added account reaches the menu bar even if the calendar isn't opened.
         let checkCalendars = calendar.component(.minute, from: now) % 15 == 0 || eventService.access != access
         if checkCalendars, refreshCalendars() { return }

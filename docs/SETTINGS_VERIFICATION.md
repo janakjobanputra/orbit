@@ -65,6 +65,17 @@ Run everything with `make test`. To look at the rendered popovers, run the tests
 | Hide all-day events | on, off | Behaviour (`testHideAllDayEvents`), Render | pass |
 | Hide past events | on, off | Behaviour (`testHidePastEvents`), Render | pass |
 
+## Notifications
+
+| Setting | Options | Checked by | Result |
+|---|---|---|---|
+| Alert me before meetings | on, off | Behaviour (`MeetingAlertTests`) | pass |
+| When | When it starts, 1, 2, 5, 10 minutes before | Behaviour (`testLeadTimeAndTurningAlertsOff`) | pass |
+| Alert for | Video meetings, All events | Behaviour (`testOnlyVideoMeetingsUnlessYouAskForAll`) | pass |
+| Play a sound | on, off | Not automated: the sound plays from the alert window | by hand |
+| Show the Granola button | on, off | Render (`testMeetingAlert`); Granola itself not installed on the test Mac | partly |
+| Show a sample alert | button | Behaviour (`testTheSampleAlertOpensNothing`), by hand | pass |
+
 ## Calendars
 
 | Setting | Options | Checked by | Result |

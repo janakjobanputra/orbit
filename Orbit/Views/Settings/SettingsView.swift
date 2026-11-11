@@ -1,13 +1,13 @@
 import SwiftUI
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, display, calendars, backup, help, about
+    case general, display, calendars, notifications, backup, help, about
 
     var id: Self { self }
 
     /// How the sidebar lists them.
     static let groups: [(heading: String?, panes: [SettingsPane])] = [
-        (nil, [.general, .display, .calendars]),
+        (nil, [.general, .display, .calendars, .notifications]),
         ("Manage", [.backup, .help]),
         (nil, [.about]),
     ]
@@ -17,6 +17,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "General"
         case .display: "Display"
         case .calendars: "Calendars"
+        case .notifications: "Notifications"
         case .backup: "Backup"
         case .help: "Help"
         case .about: "About"
@@ -29,6 +30,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "Startup, theme and shortcuts"
         case .display: "Menu bar, calendar and layout"
         case .calendars: "What shows, and where new events go"
+        case .notifications: "Alerts before your meetings"
         case .backup: "Export and import your settings"
         case .help: "Answers to common questions"
         case .about: "Version and updates"
@@ -40,6 +42,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: "gearshape"
         case .display: "menubar.rectangle"
         case .calendars: "calendar"
+        case .notifications: "bell"
         case .backup: "arrow.up.arrow.down.circle"
         case .help: "questionmark.circle"
         case .about: "info.circle"
@@ -95,6 +98,7 @@ private struct SettingsPageContent: View {
                 case .general: GeneralSettingsTab()
                 case .display: DisplaySettingsTab()
                 case .calendars: CalendarsSettingsTab()
+                case .notifications: NotificationsSettingsTab()
                 case .backup: BackupSettingsTab()
                 case .help: HelpSettingsTab()
                 case .about: AboutSettingsTab()

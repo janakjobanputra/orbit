@@ -38,6 +38,11 @@ final class SettingsFileTests: XCTestCase {
         p.eventDots = .off
         p.weekStart = .monday
         p.showMonthGrid = false
+        p.meetingAlerts = false
+        p.meetingAlertLeadMinutes = 5
+        p.meetingAlertScope = .allEvents
+        p.meetingAlertSound = false
+        p.meetingAlertShowsGranola = false
         p.calendarSpan = .threeWeeks
         p.textSize = TextSize.allCases.last!
         p.calendarDensity = .airy

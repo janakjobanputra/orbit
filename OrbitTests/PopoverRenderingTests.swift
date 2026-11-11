@@ -140,6 +140,31 @@ final class PopoverRenderingTests: XCTestCase {
         await assertEachOptionDiffers("Week starts on", WeekStart.allCases) { $0.preferences.weekStart = $1 }
     }
 
+    func testMeetingAlert() async {
+        var call = TestSupport.event("Design review with the Paris team", start: TestSupport.date(2026, 10, 31, 9, 48), minutes: 45)
+        call.meetingURL = URL(string: "https://zoom.us/j/123456789")
+        let lunch = TestSupport.event("Lunch", start: TestSupport.date(2026, 10, 31, 9, 48), minutes: 60)
+        let (state, _, _) = await StateFixture.make { store, preferences in
+            store.add(call, link: call.meetingURL?.absoluteString)
+            store.add(lunch)
+            preferences.meetingAlertScope = .allEvents
+        }
+        XCTAssertEqual(state.meetingAlerts.count, 2)
+        var images: [Data] = []
+        for (granola, scheme) in [(true, ColorScheme.light), (false, .light), (true, .dark)] {
+            let root = MeetingAlertView(showsGranola: granola)
+                .environment(state)
+                .environment(\.colorScheme, scheme)
+                .environment(\.timeZone, TestSupport.utc)
+                .background(scheme == .dark ? Color.black : Color.white)
+            let rep = snapshot(NSHostingView(rootView: root))
+            attach(rep, "Meeting alert, Granola \(granola ? "installed" : "not installed"), \(scheme)")
+            XCTAssertEqual(rep.size.width, MeetingAlertView.width, accuracy: 0.5)
+            images.append(png(rep))
+        }
+        XCTAssertEqual(Set(images).count, 3)
+    }
+
     func testCalendarShows() async {
         await assertEachOptionDiffers("Calendar shows", CalendarSpan.allCases) { $0.preferences.calendarSpan = $1 }
     }

@@ -52,6 +52,11 @@ struct HelpTopic: Identifiable, Hashable {
             answer: "Orbit shows the calendars your Mac syncs in Apple Calendar. Add Google, Exchange or other accounts in System Settings › Internet Accounts, then turn their calendars on under Calendars. If none appear at all, allow Orbit in System Settings › Privacy & Security › Calendars. Orbit notices new accounts and access by itself, so there's no need to restart it: open the calendar and they're there."
         ),
         HelpTopic(
+            group: .meetings,
+            question: "How do meeting alerts work?",
+            answer: "A minute before each video meeting, a small window appears at the top right of your screen with Join, and Granola if you have it for notes. Join opens Zoom and Teams calls straight in their apps when they're installed, and everything else in your browser. Change when alerts appear, or turn them on for every event, in Settings › Notifications, where you can also preview one."
+        ),
+        HelpTopic(
             group: .calendar,
             question: "Can the calendar show just a few weeks instead of the month?",
             answer: "Yes. Set Display › Calendar display › Calendar shows to 3 weeks. You get last week, this week and next week, with this week always in the middle when you open Orbit. The arrows move a week at a time, and the dot button brings you back to this week."

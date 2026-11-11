@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var updater: AppUpdater?
     private var telemetry: Telemetry?
     private var crashDiagnostics: CrashDiagnostics?
+    private var meetingAlerts: MeetingAlertController?
     private lazy var welcomeTour = OnboardingController(appState: appState, record: OnboardingRecord(defaults: .standard)) { [weak self] in
         self?.statusItemController?.togglePopover()
     }
@@ -43,6 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.appState.joinNextMeeting()
         }
         updater = AppUpdater(state: appState.updates)
+        meetingAlerts = MeetingAlertController(appState: appState)
         applyPreferences()
         appState.showWelcomeTour = { [weak self] in self?.welcomeTour.show() }
         Task { await startWithWelcomeTour() }
@@ -51,6 +53,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if UserDefaults.standard.bool(forKey: "OpenSettingsOnLaunch") {
             showSettings()
         }
+        #if DEBUG
+        if UserDefaults.standard.bool(forKey: "ShowSampleMeetingAlert") {
+            Task {
+                try? await Task.sleep(for: .seconds(2))
+                appState.showSampleMeetingAlert()
+            }
+        }
+        #endif
     }
 
     /// A fresh install gets the welcome tour, which asks for calendar access itself; anyone else is asked straight away

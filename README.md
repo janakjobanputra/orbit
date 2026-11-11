@@ -49,6 +49,7 @@ The menu bar shows the date, the time, your next meeting, or just Orbit's logo. 
 - The whole month above it, or a rolling 3 weeks with this week in the middle.
 - Or, set in Settings, an agenda of the days ahead. Each day's all-day events stay pinned at the top while you scroll through it.
 - The meeting you're in, or the one starting in the next 10 minutes, expands with Join, Map and link buttons.
+- A minute before each video call, an alert with Join (and Granola, if you use it for notes). Join opens Zoom and Teams calls straight in their apps.
 - Click any event for its details: calendar, video link, location, links, guests and notes. Open it in Calendar, copy it, or delete it.
 - One-click join for Zoom, Meet, Teams, Webex and more, plus any video service you add.
 - Finished events step aside, so the next thing on your day is always at the top.

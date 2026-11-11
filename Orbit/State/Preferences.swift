@@ -14,6 +14,11 @@ final class Preferences {
         static let appearance = "appearance"
         static let globalShortcutsEnabled = "globalShortcutsEnabled"
         static let customVideoServices = "customVideoServices"
+        static let meetingAlerts = "meetingAlerts"
+        static let meetingAlertLeadMinutes = "meetingAlertLeadMinutes"
+        static let meetingAlertScope = "meetingAlertScope"
+        static let meetingAlertSound = "meetingAlertSound"
+        static let meetingAlertShowsGranola = "meetingAlertShowsGranola"
         static let checkForUpdates = "checkForUpdates"
         static let shareUsageStats = "shareUsageStats"
         static let sendCrashReports = "sendCrashReports"
@@ -53,6 +58,14 @@ final class Preferences {
     var appearance: AppearanceMode { didSet { defaults.set(appearance.rawValue, forKey: Key.appearance) } }
     var globalShortcutsEnabled: Bool { didSet { defaults.set(globalShortcutsEnabled, forKey: Key.globalShortcutsEnabled) } }
     var customVideoServices: [CustomVideoService] { didSet { store(customVideoServices, forKey: Key.customVideoServices) } }
+    /// A floating alert with a Join button shortly before each meeting.
+    var meetingAlerts: Bool { didSet { defaults.set(meetingAlerts, forKey: Key.meetingAlerts) } }
+    /// Minutes before the start; 0 is when it starts. One of `MeetingAlertSchedule.leadOptions`.
+    var meetingAlertLeadMinutes: Int { didSet { defaults.set(meetingAlertLeadMinutes, forKey: Key.meetingAlertLeadMinutes) } }
+    var meetingAlertScope: MeetingAlertScope { didSet { defaults.set(meetingAlertScope.rawValue, forKey: Key.meetingAlertScope) } }
+    var meetingAlertSound: Bool { didSet { defaults.set(meetingAlertSound, forKey: Key.meetingAlertSound) } }
+    /// The Granola button on alerts, when Granola is installed.
+    var meetingAlertShowsGranola: Bool { didSet { defaults.set(meetingAlertShowsGranola, forKey: Key.meetingAlertShowsGranola) } }
     /// Look for a new version on GitHub once a day.
     var checkForUpdates: Bool { didSet { defaults.set(checkForUpdates, forKey: Key.checkForUpdates) } }
     /// Send anonymous usage stats once a day. Off unless you turn it on.
@@ -109,6 +122,10 @@ final class Preferences {
             Key.globalShortcutsEnabled: true,
             Key.checkForUpdates: true,
             Key.sendCrashReports: true,
+            Key.meetingAlerts: true,
+            Key.meetingAlertLeadMinutes: 1,
+            Key.meetingAlertSound: true,
+            Key.meetingAlertShowsGranola: true,
             Key.nextEventLeadMinutes: 30,
             Key.showYearProgress: true,
             Key.highlightToday: true,
@@ -121,6 +138,12 @@ final class Preferences {
         appearance = Self.value(defaults, Key.appearance, default: .system)
         globalShortcutsEnabled = defaults.bool(forKey: Key.globalShortcutsEnabled)
         customVideoServices = Self.decoded(defaults, Key.customVideoServices) ?? []
+        meetingAlerts = defaults.bool(forKey: Key.meetingAlerts)
+        let lead = defaults.integer(forKey: Key.meetingAlertLeadMinutes)
+        meetingAlertLeadMinutes = MeetingAlertSchedule.leadOptions.contains(lead) ? lead : 1
+        meetingAlertScope = Self.value(defaults, Key.meetingAlertScope, default: .videoMeetings)
+        meetingAlertSound = defaults.bool(forKey: Key.meetingAlertSound)
+        meetingAlertShowsGranola = defaults.bool(forKey: Key.meetingAlertShowsGranola)
         checkForUpdates = defaults.bool(forKey: Key.checkForUpdates)
         shareUsageStats = defaults.bool(forKey: Key.shareUsageStats)
         sendCrashReports = defaults.bool(forKey: Key.sendCrashReports)

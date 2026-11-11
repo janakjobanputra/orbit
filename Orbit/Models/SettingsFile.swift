@@ -36,6 +36,11 @@ struct SettingsFile: Codable, Equatable {
         var shareUsageStats: Bool?
         var sendCrashReports: Bool?
         var customVideoServices: [VideoService]?
+        var meetingAlerts: Bool?
+        var meetingAlertLeadMinutes: Int?
+        var meetingAlertScope: String?
+        var meetingAlertSound: Bool?
+        var meetingAlertShowsGranola: Bool?
         // Menu bar
         var menuBarFormat: MenuBarFormat?
         var nextEventLeadMinutes: Int?
@@ -128,6 +133,11 @@ extension Preferences {
             shareUsageStats: shareUsageStats,
             sendCrashReports: sendCrashReports,
             customVideoServices: customVideoServices.map { .init(name: $0.name, host: $0.host) },
+            meetingAlerts: meetingAlerts,
+            meetingAlertLeadMinutes: meetingAlertLeadMinutes,
+            meetingAlertScope: meetingAlertScope.rawValue,
+            meetingAlertSound: meetingAlertSound,
+            meetingAlertShowsGranola: meetingAlertShowsGranola,
             menuBarFormat: menuBarFormat,
             nextEventLeadMinutes: nextEventLeadMinutes,
             showDaySummary: showDaySummary,
@@ -185,6 +195,15 @@ extension Preferences {
                 CustomVideoService.normalizedHost(from: service.host).map { CustomVideoService(name: service.name, host: $0) }
             }
         }
+
+        set(values.meetingAlerts) { meetingAlerts = $0 }
+        // The nearest time the When menu offers.
+        set(values.meetingAlertLeadMinutes) { minutes in
+            meetingAlertLeadMinutes = MeetingAlertSchedule.leadOptions.min { abs($0 - minutes) < abs($1 - minutes) } ?? meetingAlertLeadMinutes
+        }
+        option(values.meetingAlertScope) { (value: MeetingAlertScope) in meetingAlertScope = value }
+        set(values.meetingAlertSound) { meetingAlertSound = $0 }
+        set(values.meetingAlertShowsGranola) { meetingAlertShowsGranola = $0 }
 
         set(values.menuBarFormat) { menuBarFormat = $0 }
         set(values.nextEventLeadMinutes) { nextEventLeadMinutes = min(max($0, 5), 120) }

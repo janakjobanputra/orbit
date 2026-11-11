@@ -204,7 +204,7 @@ struct EventRowView: View {
             }
             Spacer(minLength: 4)
             if let url = event.meetingURL, event.end > appState.now {
-                Button("Join") { NSWorkspace.shared.open(url) }
+                Button("Join") { appState.openMeeting(url) }
                     .controlSize(.small)
                     .buttonStyle(.borderedProminent)
             }
@@ -254,7 +254,7 @@ struct EventRowView: View {
     private var linkChips: [LinkChip.Model] {
         var chips: [LinkChip.Model] = []
         if let url = event.meetingURL {
-            chips.append(.init(id: "join", title: "Join", symbol: "video.fill", isProminent: true) { NSWorkspace.shared.open(url) })
+            chips.append(.init(id: "join", title: "Join", symbol: "video.fill", isProminent: true) { appState.openMeeting(url) })
         }
         if let location = event.location, !location.isEmpty {
             chips.append(.init(id: "map", title: "Map", symbol: "mappin.and.ellipse") { appState.openInMaps(location) })
