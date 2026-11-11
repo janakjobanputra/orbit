@@ -510,6 +510,7 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertTrue(preferences.showYearProgress)
         XCTAssertTrue(preferences.highlightToday)
         XCTAssertTrue(preferences.showMonthGrid)
+        XCTAssertEqual(preferences.calendarSpan, .month)
         XCTAssertEqual(preferences.eventDots, .colors)
         XCTAssertEqual(preferences.textSize, .standard)
         XCTAssertEqual(preferences.agendaDayCount, 14)
@@ -536,6 +537,7 @@ final class SettingsPersistenceTests: XCTestCase {
         for value in AppearanceMode.allCases { reloaded().appearance = value; XCTAssertEqual(reloaded().appearance, value) }
         for value in EventDotsStyle.allCases { reloaded().eventDots = value; XCTAssertEqual(reloaded().eventDots, value) }
         for value in WeekStart.allCases { reloaded().weekStart = value; XCTAssertEqual(reloaded().weekStart, value) }
+        for value in CalendarSpan.allCases { reloaded().calendarSpan = value; XCTAssertEqual(reloaded().calendarSpan, value) }
         for value in TextSize.allCases { reloaded().textSize = value; XCTAssertEqual(reloaded().textSize, value) }
         for value in Density.allCases {
             reloaded().calendarDensity = value; XCTAssertEqual(reloaded().calendarDensity, value)

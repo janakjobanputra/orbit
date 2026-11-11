@@ -53,6 +53,11 @@ struct HelpTopic: Identifiable, Hashable {
         ),
         HelpTopic(
             group: .calendar,
+            question: "Can the calendar show just a few weeks instead of the month?",
+            answer: "Yes. Set Display › Calendar display › Calendar shows to 3 weeks. You get last week, this week and next week, with this week always in the middle when you open Orbit. The arrows move a week at a time, and the dot button brings you back to this week."
+        ),
+        HelpTopic(
+            group: .calendar,
             question: "How do I switch between the Day view and the agenda?",
             answer: "Use Display › Layout › Events view. Day shows the selected date hour by hour; Agenda lists the days ahead. Click any date in the month to see that day. Display › Layout › Events (Compact, Cozy or Airy) spaces out both: in the Day view it sets how tall each hour is."
         ),

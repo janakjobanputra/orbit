@@ -32,10 +32,12 @@ struct MonthGridView: View {
                             .foregroundStyle(.tertiary)
                             .frame(maxWidth: .infinity)
                             .frame(height: preferences.calendarDensity.dayCellSize * scale)
+                            .padding(.top, MonthLabel.inset(preferences.calendarSpan, scale: scale))
                             .padding(.vertical, 2)
                     }
                     ForEach(weekDays) { day in
-                        DayCell(day: day)
+                        // Only where a new month starts partway through: the header already names the first one.
+                        DayCell(day: day, startsNewMonth: day.id != days.first?.id && appState.calendar.component(.day, from: day.date) == 1)
                     }
                 }
             }
@@ -55,6 +57,7 @@ private struct DayCell: View {
     @Environment(AppState.self) private var appState
     @Environment(\.textScale) private var scale
     let day: CalendarDay
+    var startsNewMonth = false
 
     private var isToday: Bool { appState.calendar.isDate(day.date, inSameDayAs: appState.now) }
     private var isSelected: Bool { appState.calendar.isDate(day.date, inSameDayAs: appState.selectedDate) }
@@ -66,6 +69,9 @@ private struct DayCell: View {
             appState.selectedDate = day.date
         } label: {
             VStack(spacing: 2) {
+                if appState.preferences.calendarSpan == .threeWeeks {
+                    MonthLabel(date: day.date, isShown: startsNewMonth)
+                }
                 Text(day.date, format: .dateTime.day())
                     .orbitFont(.callout, weight: isToday ? .semibold : .regular, monospacedDigit: true)
                     .foregroundStyle(foreground)
@@ -117,5 +123,32 @@ private struct DayCell: View {
         if isToday { return .orbitTeal }
         if appState.preferences.dimWeekends && appState.calendar.isDateInWeekend(day.date) { return .secondary }
         return .primary
+    }
+}
+
+/// The 3-week view can run across months, so a 1st partway through carries a small "Dec" above it.
+/// Every day keeps the space, so the rows stay level and the grid doesn't change height as you page.
+private struct MonthLabel: View {
+
+    @Environment(\.textScale) private var scale
+    let date: Date
+    let isShown: Bool
+
+    private static let height: CGFloat = 11
+
+    /// How far the label and its spacing push the day number down, for the week numbers to match.
+    static func inset(_ span: CalendarSpan, scale: CGFloat) -> CGFloat {
+        span == .threeWeeks ? height * scale + 2 : 0
+    }
+
+    var body: some View {
+        Text(date, format: .dateTime.month(.abbreviated))
+            .orbitFont(.caption, weight: .semibold)
+            .foregroundStyle(Color.orbitTeal)
+            .lineLimit(1)
+            .fixedSize()
+            .opacity(isShown ? 1 : 0)
+            .accessibilityHidden(true)
+            .frame(height: Self.height * scale)
     }
 }

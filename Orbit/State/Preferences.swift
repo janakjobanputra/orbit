@@ -29,6 +29,7 @@ final class Preferences {
         static let eventDots = "eventDots"
         static let weekStart = "weekStart"
         static let showMonthGrid = "showMonthGrid"
+        static let calendarSpan = "calendarSpan"
         static let textSize = "textSize"
         static let calendarDensity = "calendarDensity"
         static let eventDensity = "eventDensity"
@@ -76,6 +77,8 @@ final class Preferences {
     var eventDots: EventDotsStyle { didSet { defaults.set(eventDots.rawValue, forKey: Key.eventDots) } }
     var weekStart: WeekStart { didSet { defaults.set(weekStart.rawValue, forKey: Key.weekStart) } }
     var showMonthGrid: Bool { didSet { defaults.set(showMonthGrid, forKey: Key.showMonthGrid) } }
+    /// The whole month, or three weeks with this one in the middle.
+    var calendarSpan: CalendarSpan { didSet { defaults.set(calendarSpan.rawValue, forKey: Key.calendarSpan) } }
 
     // MARK: Layout
 
@@ -136,6 +139,7 @@ final class Preferences {
         let localeWeekStart: WeekStart = Calendar.current.firstWeekday == 2 ? .monday : .sunday
         weekStart = (defaults.object(forKey: Key.weekStart) as? Int).flatMap(WeekStart.init(rawValue:)) ?? localeWeekStart
         showMonthGrid = defaults.bool(forKey: Key.showMonthGrid)
+        calendarSpan = Self.value(defaults, Key.calendarSpan, default: .month)
 
         textSize = Self.value(defaults, Key.textSize, default: .standard)
         calendarDensity = Self.value(defaults, Key.calendarDensity, default: .compact)

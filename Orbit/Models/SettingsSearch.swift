@@ -85,6 +85,7 @@ enum SettingsSearch {
         entry(.display, "Calendar display", "Dim weekends", keywords: "saturday sunday"),
         entry(.display, "Calendar display", "Event dots", keywords: "dot style colors month grid"),
         entry(.display, "Calendar display", "Week starts on", keywords: "sunday monday first day"),
+        entry(.display, "Calendar display", "Calendar shows", "The whole month, or 3 weeks with this one in the middle.", keywords: "month three weeks rolling fortnight grid"),
         entry(.display, "Layout", "Events view", "Day or Agenda.", keywords: "timeline list"),
         entry(.display, "Layout", "Text size", keywords: "font bigger smaller large"),
         entry(.display, "Layout", "Calendar spacing", keywords: "density compact cozy airy month"),

@@ -62,9 +62,9 @@ final class MonthPagingTests: XCTestCase {
         let full = store.fullFetches
         let summaries = store.summaryFetches
 
-        state.showMonth(offset: 1)
-        state.showMonth(offset: 1)
-        state.showMonth(offset: -1)
+        state.showPage(offset: 1)
+        state.showPage(offset: 1)
+        state.showPage(offset: -1)
 
         XCTAssertEqual(store.fullFetches, full, "The agenda and menu bar don't change with the month")
         XCTAssertEqual(store.summaryFetches, summaries + 3)
@@ -77,7 +77,7 @@ final class MonthPagingTests: XCTestCase {
             store.add(trip)
             store.add(lateCall)
         }
-        state.showMonth(offset: 1)
+        state.showPage(offset: 1)
         let titles = { (day: Int) in state.events(on: TestSupport.date(2026, 11, day, 15)).map(\.title) }
         XCTAssertEqual(titles(1), [])
         XCTAssertEqual(titles(2), ["Lisbon"])
@@ -95,5 +95,71 @@ final class MonthPagingTests: XCTestCase {
         XCTAssertEqual(state.events(on: TestSupport.date(2026, 10, 31)), [])
         state.preferences.setCalendar("personal", visible: true)
         XCTAssertEqual(state.events(on: TestSupport.date(2026, 10, 31)).map(\.title), ["Gym"])
+    }
+}
+
+/// The rolling 3-week calendar: this week in the middle, a week at a time.
+@MainActor
+final class ThreeWeekViewTests: XCTestCase {
+
+    // Saturday 31 October 2026, weeks starting on Sunday: 18 October to 7 November.
+    private let today = TestSupport.date(2026, 10, 31, 9)
+
+    private func make(_ setUp: @MainActor (FakeEventStore, Preferences) -> Void = { _, _ in }) async -> (AppState, FakeEventStore) {
+        let (state, store, _) = await StateFixture.make(at: today) { store, preferences in
+            preferences.weekStart = .sunday
+            preferences.calendarSpan = .threeWeeks
+            setUp(store, preferences)
+        }
+        return (state, store)
+    }
+
+    func testShowsTheWeeksEitherSideOfThisOne() async {
+        let (state, _) = await make()
+        XCTAssertEqual(state.gridDays.map(\.date).first, TestSupport.date(2026, 10, 18))
+        XCTAssertEqual(state.gridDays.map(\.date).last, TestSupport.date(2026, 11, 7))
+    }
+
+    func testArrowsMoveAWeekAndTodayComesBack() async {
+        let (state, _) = await make()
+        state.showPage(offset: 1)
+        XCTAssertEqual(state.gridDays.first?.date, TestSupport.date(2026, 10, 25))
+        state.showPage(offset: -2)
+        XCTAssertEqual(state.gridDays.first?.date, TestSupport.date(2026, 10, 11))
+        state.showToday()
+        XCTAssertEqual(state.gridDays.first?.date, TestSupport.date(2026, 10, 18))
+    }
+
+    func testDotsFollowTheWeeksIntoTheNextMonth() async {
+        let dinner = TestSupport.event("Dinner", start: TestSupport.date(2026, 11, 26, 19), minutes: 90)
+        let (state, _) = await make { store, _ in store.add(dinner) }
+        XCTAssertEqual(state.events(on: dinner.start), [], "Not in the first three weeks")
+        state.showPage(offset: 3)
+        XCTAssertEqual(state.events(on: dinner.start).map(\.title), ["Dinner"])
+    }
+
+    func testSwitchingBetweenMonthAndThreeWeeksNeedsNoFetch() async {
+        let (state, store) = await make()
+        let fetches = store.summaryFetches
+        state.preferences.calendarSpan = .month
+        state.preferences.calendarSpan = .threeWeeks
+        XCTAssertEqual(store.summaryFetches, fetches)
+    }
+
+    func testPagingWithinTheSameWeekDoesntFetch() async {
+        let (state, store) = await make()
+        let fetches = store.summaryFetches
+        // Today is Saturday 31 October; Tuesday 3 November starts the next week.
+        state.displayedMonth = TestSupport.date(2026, 11, 3)
+        XCTAssertEqual(store.summaryFetches, fetches + 1, "Moved a week")
+        state.displayedMonth = TestSupport.date(2026, 11, 5)
+        XCTAssertEqual(store.summaryFetches, fetches + 1, "Same week")
+    }
+
+    func testGoingToADayPutsItsWeekInTheMiddle() async {
+        let (state, _) = await make()
+        state.show(date: TestSupport.date(2027, 2, 10))
+        XCTAssertEqual(state.gridDays[7].date, TestSupport.date(2027, 2, 7))
+        XCTAssertTrue(state.calendar.isDate(state.selectedDate, inSameDayAs: TestSupport.date(2027, 2, 10)))
     }
 }

@@ -165,7 +165,7 @@ private struct HeaderBar: View {
                 iconButton("magnifyingglass", label: "Search events", key: "f") { appState.beginSearch() }
                 iconButton(
                     appState.preferences.showMonthGrid ? "chevron.up" : "chevron.down",
-                    label: appState.preferences.showMonthGrid ? "Hide month" : "Show month",
+                    label: "\(appState.preferences.showMonthGrid ? "Hide" : "Show") \(appState.preferences.calendarSpan == .month ? "month" : "weeks")",
                     key: "m"
                 ) {
                     withAnimation(.snappy(duration: 0.2)) { appState.preferences.showMonthGrid.toggle() }
@@ -251,14 +251,26 @@ private struct MonthHeaderView: View {
 
     var body: some View {
         HStack {
-            Text(appState.displayedMonth, format: .dateTime.month(.wide).year())
+            Text(titleDate, format: .dateTime.month(.wide).year())
                 .orbitFont(.headline)
             Spacer()
+            let unit = appState.preferences.calendarSpan == .month ? "month" : "week"
             HStack(spacing: 2) {
-                navButton("chevron.left", label: "Previous month") { appState.showMonth(offset: -1) }
+                navButton("chevron.left", label: "Previous \(unit)") { appState.showPage(offset: -1) }
                 navButton("smallcircle.filled.circle", label: "Today") { appState.showToday() }
-                navButton("chevron.right", label: "Next month") { appState.showMonth(offset: 1) }
+                navButton("chevron.right", label: "Next \(unit)") { appState.showPage(offset: 1) }
             }
+        }
+    }
+
+    /// "November 2026". For three weeks, the month of the first day shown: the 1st of the next one is labelled in the grid.
+    /// Formatted by `Text`, so it uses the calendar's time zone rather than the Mac's.
+    private var titleDate: Date {
+        switch appState.preferences.calendarSpan {
+        case .month:
+            return appState.displayedMonth
+        case .threeWeeks:
+            return appState.gridDays.first?.date ?? appState.displayedMonth
         }
     }
 

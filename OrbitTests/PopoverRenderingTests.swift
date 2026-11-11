@@ -140,6 +140,10 @@ final class PopoverRenderingTests: XCTestCase {
         await assertEachOptionDiffers("Week starts on", WeekStart.allCases) { $0.preferences.weekStart = $1 }
     }
 
+    func testCalendarShows() async {
+        await assertEachOptionDiffers("Calendar shows", CalendarSpan.allCases) { $0.preferences.calendarSpan = $1 }
+    }
+
     func testShowMonth() async {
         await assertEachOptionDiffers("Show month", [true, false]) { $0.preferences.showMonthGrid = $1 }
     }
@@ -202,7 +206,7 @@ final class PopoverRenderingTests: XCTestCase {
         let flipped = await StateFixture.make(at: november).state
         let view = host(flipped)
         _ = snapshot(view)
-        flipped.showMonth(offset: 1)
+        flipped.showPage(offset: 1)
         let afterFlip = snapshot(view)
 
         let fresh = await StateFixture.make(at: november).state

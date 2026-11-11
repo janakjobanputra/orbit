@@ -48,6 +48,7 @@ Run everything with `make test`. To look at the rendered popovers, run the tests
 | Dim weekends | on, off | Render | pass |
 | Event dots | on, off; when on: Single dot, Calendar colors | Behaviour (`testEventDotColoursAreDistinctAndCapped`), Render | pass |
 | Week starts on | Sun, Mon | Behaviour (`testWeekStartsOn`), Render | pass |
+| Calendar shows | Month, 3 weeks | Behaviour (`ThreeWeekViewTests`), Render | pass |
 | Show month (⌘M in the popover) | shown, hidden | Behaviour, Render | pass |
 
 ## Display › Layout

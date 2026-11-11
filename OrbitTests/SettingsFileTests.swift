@@ -38,6 +38,7 @@ final class SettingsFileTests: XCTestCase {
         p.eventDots = .off
         p.weekStart = .monday
         p.showMonthGrid = false
+        p.calendarSpan = .threeWeeks
         p.textSize = TextSize.allCases.last!
         p.calendarDensity = .airy
         p.eventDensity = .cozy

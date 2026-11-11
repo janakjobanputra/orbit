@@ -25,6 +25,25 @@ enum EventDotsStyle: String, CaseIterable, Identifiable, Sendable {
     static let onStyles: [Self] = [.single, .colors]
 }
 
+/// How much the calendar grid shows: the whole month, or three weeks with this one in the middle.
+enum CalendarSpan: String, CaseIterable, Identifiable, Sendable {
+    case month, threeWeeks
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .month: "Month"
+        case .threeWeeks: "3 weeks"
+        }
+    }
+
+    /// What one press of the arrows moves by.
+    var pageComponent: Calendar.Component {
+        self == .month ? .month : .weekOfYear
+    }
+}
+
 enum WeekStart: Int, CaseIterable, Identifiable, Sendable {
     case sunday = 1, monday = 2
 

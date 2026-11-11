@@ -11,6 +11,9 @@ struct DisplaySettingsTab: View {
             MenuBarSection()
 
             SettingsSection("Calendar display") {
+                SettingsSegmentedPicker(title: "Calendar shows", detail: "3 weeks keeps this week in the middle, with the weeks either side.", selection: $preferences.calendarSpan) {
+                    ForEach(CalendarSpan.allCases) { Text($0.label).tag($0) }
+                }
                 SettingsToggle("Day summary", isOn: $preferences.showDaySummary)
                 SettingsToggle("Show free time", detail: "Gaps of 30 minutes or more between 9am and 6pm.", isOn: $preferences.showFreeTime)
                 SettingsToggle("Year progress bar", isOn: $preferences.showYearProgress)

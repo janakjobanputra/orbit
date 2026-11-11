@@ -56,6 +56,35 @@ final class MonthGridTests: XCTestCase {
         XCTAssertEqual(days.filter(\.isInDisplayedMonth).count, 31)
     }
 
+    func testThreeWeeksPutTheWeekInTheMiddle() {
+        // Wednesday 11 November 2026.
+        let sunday = MonthGrid.weeks(around: TestSupport.date(2026, 11, 11, 15), calendar: TestSupport.calendar(firstWeekday: 1))
+        XCTAssertEqual(sunday.count, 21)
+        XCTAssertEqual(sunday.first?.date, TestSupport.date(2026, 11, 1))
+        XCTAssertEqual(sunday[7].date, TestSupport.date(2026, 11, 8))
+        XCTAssertEqual(sunday.last?.date, TestSupport.date(2026, 11, 21))
+        XCTAssertTrue(sunday.allSatisfy(\.isInDisplayedMonth), "No day is dimmed")
+
+        let monday = MonthGrid.weeks(around: TestSupport.date(2026, 11, 11), calendar: TestSupport.calendar(firstWeekday: 2))
+        XCTAssertEqual(monday.first?.date, TestSupport.date(2026, 11, 2))
+        XCTAssertEqual(monday.last?.date, TestSupport.date(2026, 11, 22))
+    }
+
+    func testThreeWeeksFollowTheFirstWeekdayOnTheEdgeDay() {
+        // Sunday 8 November 2026 ends a Monday-first week but starts a Sunday-first one.
+        let monday = MonthGrid.weeks(around: TestSupport.date(2026, 11, 8), calendar: TestSupport.calendar(firstWeekday: 2))
+        XCTAssertEqual(monday[7].date, TestSupport.date(2026, 11, 2))
+        let sunday = MonthGrid.weeks(around: TestSupport.date(2026, 11, 8), calendar: TestSupport.calendar(firstWeekday: 1))
+        XCTAssertEqual(sunday[7].date, TestSupport.date(2026, 11, 8))
+    }
+
+    func testThreeWeeksAcrossTheNewYear() {
+        let days = MonthGrid.weeks(around: TestSupport.date(2026, 12, 31), calendar: TestSupport.calendar(firstWeekday: 1))
+        XCTAssertEqual(days.first?.date, TestSupport.date(2026, 12, 20))
+        XCTAssertEqual(days.last?.date, TestSupport.date(2027, 1, 9))
+        XCTAssertEqual(Set(days.map(\.date)).count, 21)
+    }
+
     func testWeekdaySymbolsFollowFirstWeekday() {
         var calendar = TestSupport.calendar(firstWeekday: 2)
         calendar.locale = Locale(identifier: "en_US")

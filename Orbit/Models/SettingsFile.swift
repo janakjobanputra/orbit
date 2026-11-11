@@ -50,6 +50,7 @@ struct SettingsFile: Codable, Equatable {
         var eventDots: String?
         var weekStart: Int?
         var showMonthGrid: Bool?
+        var calendarSpan: String?
         // Layout
         var textSize: String?
         var calendarDensity: String?
@@ -139,6 +140,7 @@ extension Preferences {
             eventDots: eventDots.rawValue,
             weekStart: weekStart.rawValue,
             showMonthGrid: showMonthGrid,
+            calendarSpan: calendarSpan.rawValue,
             textSize: textSize.rawValue,
             calendarDensity: calendarDensity.rawValue,
             eventDensity: eventDensity.rawValue,
@@ -197,6 +199,7 @@ extension Preferences {
         option(values.eventDots) { (value: EventDotsStyle) in eventDots = value }
         set(values.weekStart.flatMap(WeekStart.init(rawValue:))) { weekStart = $0 }
         set(values.showMonthGrid) { showMonthGrid = $0 }
+        option(values.calendarSpan) { (value: CalendarSpan) in calendarSpan = value }
 
         option(values.textSize) { (value: TextSize) in textSize = value }
         option(values.calendarDensity) { (value: Density) in calendarDensity = value }

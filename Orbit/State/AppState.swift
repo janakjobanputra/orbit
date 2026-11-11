@@ -38,9 +38,12 @@ final class AppState {
     /// The event whose detail popout is open, if any.
     var detailEventID: String?
 
+    /// The day the calendar grid is built around: any day of the month it shows, or the middle of its three weeks.
     var displayedMonth: Date {
         didSet {
-            if !calendar.isDate(oldValue, equalTo: displayedMonth, toGranularity: .month) { reloadGrid() }
+            let sameMonth = calendar.isDate(oldValue, equalTo: displayedMonth, toGranularity: .month)
+            let sameWeek = calendar.isDate(oldValue, equalTo: displayedMonth, toGranularity: .weekOfYear)
+            if !(sameMonth && sameWeek) { reloadGrid() }
         }
     }
     var selectedDate: Date {
@@ -120,7 +123,7 @@ final class AppState {
     }
 
     var gridDays: [CalendarDay] {
-        MonthGrid.days(for: displayedMonth, calendar: calendar)
+        MonthGrid.days(for: displayedMonth, span: preferences.calendarSpan, calendar: calendar)
     }
 
     var menuBarTitle: String {
@@ -201,9 +204,10 @@ final class AppState {
 
     // MARK: - Actions
 
-    func showMonth(offset: Int) {
-        guard let month = calendar.date(byAdding: .month, value: offset, to: displayedMonth) else { return }
-        displayedMonth = month
+    /// The arrows: a month at a time, or a week at a time in the 3-week view.
+    func showPage(offset: Int) {
+        guard let date = calendar.date(byAdding: preferences.calendarSpan.pageComponent, value: offset, to: displayedMonth) else { return }
+        displayedMonth = date
     }
 
     func showToday() {
@@ -225,7 +229,8 @@ final class AppState {
     func show(date: Date) {
         mode = .agenda
         selectedDate = date
-        if !calendar.isDate(displayedMonth, equalTo: date, toGranularity: .month) {
+        // The 3-week view puts the day's week in the middle; the month view only moves if it's another month.
+        if !calendar.isDate(displayedMonth, equalTo: date, toGranularity: preferences.calendarSpan.pageComponent) {
             displayedMonth = date
         }
     }
@@ -321,12 +326,16 @@ final class AppState {
         reloadAgenda()
     }
 
-    /// Only the month grid changes when you page through months, and it only needs each event's day and colour.
+    /// Only the grid changes when you page through it, and it only needs each event's day and colour.
     private func reloadGrid() {
-        guard access == .granted, let month = calendar.dateInterval(of: .month, for: displayedMonth) else { return }
-        // The grid shows up to a week either side of the month, whichever day the week starts on.
-        let start = calendar.startOfDay(for: month.start.addingTimeInterval(-7 * 86_400))
-        let end = month.end.addingTimeInterval(14 * 86_400)
+        guard access == .granted else { return }
+        // Covers both the month and the 3 weeks around the displayed day, whichever day the week starts on,
+        // so switching between them, or changing the first weekday, needs no refetch.
+        let dates = (MonthGrid.days(for: displayedMonth, span: .month, calendar: calendar)
+            + MonthGrid.days(for: displayedMonth, span: .threeWeeks, calendar: calendar)).map(\.date)
+        guard let first = dates.min(), let last = dates.max(),
+              let start = calendar.date(byAdding: .day, value: -6, to: first),
+              let end = calendar.date(byAdding: .day, value: 7, to: last) else { return }
         var byDay: [Date: [CalendarEvent]] = [:]
         for event in eventService.eventSummaries(from: start, to: end) {
             // The days an event touches run on from the one it starts on.

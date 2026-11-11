@@ -37,6 +37,23 @@ enum MonthGrid {
         }
     }
 
+    /// Three whole weeks with the week holding `date` in the middle: the one before, that week and the one after.
+    /// Every day counts as in view, so none is dimmed the way the neighbouring months are in the month grid.
+    static func weeks(around date: Date, calendar: Calendar) -> [CalendarDay] {
+        guard let week = calendar.dateInterval(of: .weekOfYear, for: date),
+              let start = calendar.date(byAdding: .day, value: -7, to: week.start) else { return [] }
+        return (0..<21).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: start).map { CalendarDay(date: $0, isInDisplayedMonth: true) }
+        }
+    }
+
+    static func days(for date: Date, span: CalendarSpan, calendar: Calendar) -> [CalendarDay] {
+        switch span {
+        case .month: days(for: date, calendar: calendar)
+        case .threeWeeks: weeks(around: date, calendar: calendar)
+        }
+    }
+
     /// Weekday symbols ordered to start on the calendar's first weekday.
     static func weekdaySymbols(calendar: Calendar) -> [String] {
         let symbols = calendar.veryShortStandaloneWeekdaySymbols
