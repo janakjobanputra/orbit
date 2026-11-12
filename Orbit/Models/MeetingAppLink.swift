@@ -32,10 +32,11 @@ enum MeetingAppLink {
         return components.url
     }
 
-    /// `https://teams.microsoft.com/l/meetup-join/…` → `msteams:/l/meetup-join/…`, the same path and query.
+    /// `https://teams.microsoft.com/l/meetup-join/…` → `msteams:/l/meetup-join/…`, and the newer
+    /// `…/meet/<id>?p=…` likewise: the same path and query, as Microsoft's own join page hands to the app.
     private static func teams(_ url: URL) -> URL? {
         let path = url.path(percentEncoded: true)
-        guard path.hasPrefix("/l/meetup-join/") else { return nil }
+        guard MeetingLinkDetector.teamsJoinPaths.contains(where: { path.hasPrefix($0) }) else { return nil }
         let query = url.query(percentEncoded: true).map { "?" + $0 } ?? ""
         return URL(string: "msteams:" + path + query)
     }

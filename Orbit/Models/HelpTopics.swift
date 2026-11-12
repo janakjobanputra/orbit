@@ -54,7 +54,7 @@ struct HelpTopic: Identifiable, Hashable {
         HelpTopic(
             group: .meetings,
             question: "How do meeting alerts work?",
-            answer: "A minute before each video meeting, a small window appears at the top right of your screen with Join, and Granola if you have it for notes. Join opens Zoom and Teams calls straight in their apps when they're installed, and everything else in your browser. Change when alerts appear, or turn them on for every event, in Settings › Notifications, where you can also preview one."
+            answer: "A minute before each video meeting, a small window appears at the top right of your screen with Join. If you use Granola, Join opens it alongside the call for notes; the ⌄ next to Join joins without it. Join opens Zoom and Teams calls straight in their apps when they're installed, Google Meet in its app if you've installed it from Chrome, and everything else in your browser. Change when alerts appear, or turn them on for every event, in Settings › Notifications, where you can also preview one."
         ),
         HelpTopic(
             group: .calendar,

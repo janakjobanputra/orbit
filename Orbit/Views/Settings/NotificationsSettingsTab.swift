@@ -8,7 +8,7 @@ struct NotificationsSettingsTab: View {
         @Bindable var preferences = appState.preferences
 
         SettingsPage {
-            SettingsSection("Meeting alerts", footer: "Join opens Zoom and Teams calls in their apps when they're installed, and other calls in your browser.") {
+            SettingsSection("Meeting alerts", footer: "Join opens Zoom and Teams calls in their apps when they're installed, Google Meet in its app if you've installed it from Chrome, and other calls in your browser.") {
                 SettingsToggle("Alert me before meetings", detail: "A small window at the top right of your screen with a Join button, on top of whatever you're doing.", isOn: $preferences.meetingAlerts)
                 if preferences.meetingAlerts {
                     SettingsMenuPicker(title: "When", selection: $preferences.meetingAlertLeadMinutes) {
@@ -21,8 +21,10 @@ struct NotificationsSettingsTab: View {
                     }
                     SettingsToggle("Play a sound", isOn: $preferences.meetingAlertSound)
                     SettingsToggle(
-                        "Show the Granola button",
-                        detail: Granola.isInstalled ? "Opens Granola to take notes on the call." : "Appears when Granola is installed.",
+                        "Open Granola when joining",
+                        detail: Granola.isInstalled
+                            ? "Join opens Granola alongside the call, for notes. The ⌄ next to Join joins without it."
+                            : "Works once Granola is installed.",
                         isOn: $preferences.meetingAlertShowsGranola
                     )
                     SettingsRow(title: "Show a sample alert") {

@@ -26,6 +26,27 @@ final class MeetingAppLinkTests: XCTestCase {
         XCTAssertNil(app("https://teams.microsoft.com/v2/"))
     }
 
+    func testNewerTeamsLinksOpenInTeamsToo() {
+        XCTAssertEqual(app("https://teams.microsoft.com/meet/27299763289?p=UB3Y5Ug2"), "msteams:/meet/27299763289?p=UB3Y5Ug2")
+    }
+
+    /// Laid out like a real Teams invitation from a booking page: a mobile web link comes before the join link,
+    /// and meeting options and dial-in links follow it.
+    func testTeamsInvitationsPickTheJoinLink() {
+        let notes = """
+        Join the Teams Meeting from your mobile web browser:
+         https://visit.teams.microsoft.com/webrtc-svc/api/route?tid=abc&convId=19:meeting_X@thread.v2
+        Need help? https://aka.ms/JoinTeamsMeeting?omkt=en-US
+        Join the meeting now: https://teams.microsoft.com/l/meetup-join/19%3ameeting_X%40thread.v2/0?context=%7b%22Tid%22%3a%22abc%22%7d
+        Find a local number: https://dialin.teams.microsoft.com/22163d6e?id=911845785
+        Meeting options: https://teams.microsoft.com/meetingOptions/?organizerId=b4&tenantId=fa
+        """
+        let link = MeetingLinkDetector.firstMeetingURL(in: [nil, nil, notes])
+        XCTAssertEqual(link?.absoluteString, "https://teams.microsoft.com/l/meetup-join/19%3ameeting_X%40thread.v2/0?context=%7b%22Tid%22%3a%22abc%22%7d")
+        XCTAssertFalse(MeetingLinkDetector.isMeetingURL(URL(string: "https://teams.microsoft.com/meetingOptions/?a=b")!))
+        XCTAssertFalse(MeetingLinkDetector.isMeetingURL(URL(string: "https://visit.teams.microsoft.com/webrtc-svc/api/route")!))
+    }
+
     func testMeetAndWebexStayOnTheWeb() {
         XCTAssertNil(app("https://meet.google.com/abc-defg-hij"))
         XCTAssertNil(app("https://acme.webex.com/acme/j.php?MTID=m123"))
@@ -135,10 +156,40 @@ final class MeetingAlertTests: XCTestCase {
         XCTAssertEqual(state.meetingAlerts.map(\.title), ["A call", "B call"])
     }
 
+    func testJoinOpensGranolaUnlessYouJoinOnly() async {
+        let (state, clock) = await make([call("Design review", at: 10, 0), call("Standup", at: 10, 0)])
+        var opened: [String] = []
+        state.isGranolaInstalled = true
+        state.openMeeting = { _ in opened.append("call") }
+        state.openGranola = { opened.append("granola") }
+        move(clock, state, to: 9, 59)
+        state.join(fromAlert: state.meetingAlerts[0])
+        XCTAssertEqual(opened, ["granola", "call"], "Granola first, so the call ends up in front")
+        opened = []
+        state.join(fromAlert: state.meetingAlerts[0], withGranola: false)
+        XCTAssertEqual(opened, ["call"])
+    }
+
+    func testJoinSkipsGranolaWhenItsOffOrMissing() async {
+        let (state, clock) = await make([call("Design review", at: 10, 0)]) { $0.meetingAlertShowsGranola = false }
+        var opened: [String] = []
+        state.isGranolaInstalled = true
+        state.openMeeting = { _ in opened.append("call") }
+        state.openGranola = { opened.append("granola") }
+        move(clock, state, to: 9, 59)
+        state.join(fromAlert: state.meetingAlerts[0])
+        XCTAssertEqual(opened, ["call"])
+        state.preferences.meetingAlertShowsGranola = true
+        state.isGranolaInstalled = false
+        XCTAssertFalse(state.alertsOpenGranola)
+    }
+
     func testTheSampleAlertOpensNothing() async {
         let (state, _) = await make([])
         var opened: [URL] = []
         state.openMeeting = { opened.append($0) }
+        state.openGranola = { opened.append(URL(string: "granola:")!) }
+        state.isGranolaInstalled = false
         state.showSampleMeetingAlert()
         state.showSampleMeetingAlert()
         XCTAssertEqual(state.meetingAlerts.count, 1, "Showing it again replaces it")

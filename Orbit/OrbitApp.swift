@@ -54,6 +54,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             showSettings()
         }
         #if DEBUG
+        // `-PretendGranolaInstalled YES` shows the Granola parts of alerts on a Mac without it.
+        if UserDefaults.standard.bool(forKey: "PretendGranolaInstalled") {
+            appState.isGranolaInstalled = true
+        }
         if UserDefaults.standard.bool(forKey: "ShowSampleMeetingAlert") {
             Task {
                 try? await Task.sleep(for: .seconds(2))

@@ -69,7 +69,7 @@ enum SettingsSearch {
         entry(.notifications, "Meeting alerts", "When", "How long before a meeting the alert appears.", keywords: "minutes before reminder alert time"),
         entry(.notifications, "Meeting alerts", "Alert for", "Video meetings or all events.", keywords: "meetings events reminder"),
         entry(.notifications, "Meeting alerts", "Play a sound", keywords: "sound chime alert"),
-        entry(.notifications, "Meeting alerts", "Show the Granola button", "When Granola is installed.", keywords: "notes granola"),
+        entry(.notifications, "Meeting alerts", "Open Granola when joining", "When Granola is installed.", keywords: "notes granola button"),
         entry(.notifications, "Meeting alerts", "Show a sample alert", keywords: "preview test try"),
         entry(.general, "Updates", "Check for updates automatically", keywords: "version new release"),
         entry(.general, "Privacy", "Share anonymous usage stats", "Off unless you turn it on.", keywords: "analytics metrics telemetry data tracking"),

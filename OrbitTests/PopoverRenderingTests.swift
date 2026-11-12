@@ -152,7 +152,8 @@ final class PopoverRenderingTests: XCTestCase {
         XCTAssertEqual(state.meetingAlerts.count, 2)
         var images: [Data] = []
         for (granola, scheme) in [(true, ColorScheme.light), (false, .light), (true, .dark)] {
-            let root = MeetingAlertView(showsGranola: granola)
+            state.isGranolaInstalled = granola
+            let root = MeetingAlertView()
                 .environment(state)
                 .environment(\.colorScheme, scheme)
                 .environment(\.timeZone, TestSupport.utc)

@@ -328,11 +328,22 @@ final class AppState {
         meetingAlerts = []
     }
 
-    /// Join from an alert: opens the call and closes that alert.
-    func join(fromAlert event: CalendarEvent) {
+    /// Join from an alert: opens the call, and Granola too unless `withGranola` is false, then closes the alert.
+    /// Granola opens first and stays behind, so the call ends up in front.
+    func join(fromAlert event: CalendarEvent, withGranola: Bool = true) {
+        if withGranola, alertsOpenGranola { openGranola() }
         if let url = event.meetingURL, event.id != Self.sampleAlertID { openMeeting(url) }
         dismissAlert(event)
     }
+
+    /// Whether an alert's Join also opens Granola: it's installed and the setting is on.
+    var alertsOpenGranola: Bool {
+        preferences.meetingAlertShowsGranola && isGranolaInstalled
+    }
+
+    /// Set by tests, which have no Granola to find or open.
+    @ObservationIgnored var isGranolaInstalled = Granola.isInstalled
+    @ObservationIgnored var openGranola: @MainActor () -> Void = { Granola.open(activate: false) }
 
     func calendarInfo(for event: CalendarEvent) -> CalendarInfo? {
         calendars.first { $0.id == event.calendarID }

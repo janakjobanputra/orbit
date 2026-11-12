@@ -28,8 +28,17 @@ enum MeetingLinkDetector {
     static func isMeetingURL(_ url: URL, extraHosts: [String] = []) -> Bool {
         guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http",
               let host = url.host?.lowercased() else { return false }
+        // Teams invitations also carry links to a mobile web page, meeting options and dial-in numbers on
+        // teams.microsoft.com, sometimes before the join link itself. Only the join links count.
+        if host.hasSuffix("teams.microsoft.com") || host.hasSuffix("teams.live.com") {
+            guard host == "teams.microsoft.com" || host == "teams.live.com" else { return false }
+            return teamsJoinPaths.contains { url.path.hasPrefix($0) }
+        }
         return (knownHosts + extraHosts).contains { host == $0 || host.hasSuffix("." + $0) }
     }
+
+    /// `/l/meetup-join/…` in older invitations, `/meet/<id>?p=…` in newer ones.
+    static let teamsJoinPaths = ["/l/meetup-join/", "/meet/"]
 
     /// Web links that aren't video calls, in the order they appear, without duplicates or calendar boilerplate.
     static func otherLinks(in fields: [String?], extraHosts: [String] = [], limit: Int = 6) -> [URL] {
