@@ -159,7 +159,18 @@ final class AppState {
 
     /// The selected day for the Day view, with every event that day, finished or not.
     var dayTimeline: DayTimeline {
-        DayTimeline(events: Agenda.deduplicated(visible(agendaEvents)), day: selectedDate, calendar: calendar)
+        dayColumns.first?.timeline ?? DayTimeline(events: [], day: selectedDate, calendar: calendar)
+    }
+
+    /// The Day view's days: the selected one, then the next ones when it shows several side by side.
+    var dayColumns: [DayColumn] {
+        let events = Agenda.deduplicated(visible(agendaEvents))
+        let first = calendar.startOfDay(for: selectedDate)
+        return (0..<preferences.dayViewDayCount).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: first).map {
+                DayColumn(date: $0, timeline: DayTimeline(events: events, day: $0, calendar: calendar))
+            }
+        }
     }
 
     func agendaRows(for day: AgendaDay) -> [AgendaRow] {
@@ -328,22 +339,11 @@ final class AppState {
         meetingAlerts = []
     }
 
-    /// Join from an alert: opens the call, and Granola too unless `withGranola` is false, then closes the alert.
-    /// Granola opens first and stays behind, so the call ends up in front.
-    func join(fromAlert event: CalendarEvent, withGranola: Bool = true) {
-        if withGranola, alertsOpenGranola { openGranola() }
+    /// Join from an alert: opens the call and closes the alert.
+    func join(fromAlert event: CalendarEvent) {
         if let url = event.meetingURL, event.id != Self.sampleAlertID { openMeeting(url) }
         dismissAlert(event)
     }
-
-    /// Whether an alert's Join also opens Granola: it's installed and the setting is on.
-    var alertsOpenGranola: Bool {
-        preferences.meetingAlertShowsGranola && isGranolaInstalled
-    }
-
-    /// Set by tests, which have no Granola to find or open.
-    @ObservationIgnored var isGranolaInstalled = Granola.isInstalled
-    @ObservationIgnored var openGranola: @MainActor () -> Void = { Granola.open(activate: false) }
 
     func calendarInfo(for event: CalendarEvent) -> CalendarInfo? {
         calendars.first { $0.id == event.calendarID }

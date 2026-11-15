@@ -42,25 +42,3 @@ enum MeetingOpener {
         url.host?.lowercased() == "meet.google.com"
     }
 }
-
-/// Granola, the meeting notes app. It has no link to a particular meeting, but it notices the call itself,
-/// so opening it is enough to start taking notes.
-@MainActor
-enum Granola {
-
-    static let bundleID = "com.granola.app"
-
-    static var isInstalled: Bool { appURL != nil }
-
-    private static var appURL: URL? {
-        NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
-    }
-
-    /// `activate: false` opens it behind the call, so the meeting stays in front.
-    static func open(activate: Bool = true) {
-        guard let appURL else { return }
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.activates = activate
-        NSWorkspace.shared.openApplication(at: appURL, configuration: configuration)
-    }
-}

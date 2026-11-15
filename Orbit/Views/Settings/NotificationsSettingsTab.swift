@@ -20,13 +20,6 @@ struct NotificationsSettingsTab: View {
                         ForEach(MeetingAlertScope.allCases) { Text($0.label).tag($0) }
                     }
                     SettingsToggle("Play a sound", isOn: $preferences.meetingAlertSound)
-                    SettingsToggle(
-                        "Open Granola when joining",
-                        detail: Granola.isInstalled
-                            ? "Join opens Granola alongside the call, for notes. The ⌄ next to Join joins without it."
-                            : "Works once Granola is installed.",
-                        isOn: $preferences.meetingAlertShowsGranola
-                    )
                     SettingsRow(title: "Show a sample alert") {
                         Button("Show") { appState.showSampleMeetingAlert() }
                     }

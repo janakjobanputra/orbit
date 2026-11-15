@@ -81,3 +81,11 @@ struct DayTimeline {
         self.blocks = blocks
     }
 }
+
+/// One day of the Day view, which can show a few side by side.
+struct DayColumn: Identifiable {
+    let date: Date
+    let timeline: DayTimeline
+
+    var id: Date { date }
+}

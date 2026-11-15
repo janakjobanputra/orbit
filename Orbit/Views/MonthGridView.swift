@@ -24,6 +24,9 @@ struct MonthGridView: View {
             }
             ForEach(0..<(days.count / 7), id: \.self) { week in
                 let weekDays = days[(week * 7)..<(week * 7 + 7)]
+                // Only the row where a new month starts makes room for its label, so the other rows are
+                // spaced just like the month view's.
+                let labelled = Set(weekDays.filter { startsNewMonth($0, in: days) }.map(\.id))
                 GridRow(alignment: .top) {
                     if preferences.showWeekNumbers, let first = weekDays.first {
                         // Same height and inset as a day's number, so the two line up.
@@ -32,16 +35,22 @@ struct MonthGridView: View {
                             .foregroundStyle(.tertiary)
                             .frame(maxWidth: .infinity)
                             .frame(height: preferences.calendarDensity.dayCellSize * scale)
-                            .padding(.top, MonthLabel.inset(preferences.calendarSpan, scale: scale))
+                            .padding(.top, labelled.isEmpty ? 0 : MonthLabel.inset(scale: scale))
                             .padding(.vertical, 2)
                     }
                     ForEach(weekDays) { day in
-                        // Only where a new month starts partway through: the header already names the first one.
-                        DayCell(day: day, startsNewMonth: day.id != days.first?.id && appState.calendar.component(.day, from: day.date) == 1)
+                        DayCell(day: day, rowHasMonthLabel: !labelled.isEmpty, startsNewMonth: labelled.contains(day.id))
                     }
                 }
             }
         }
+    }
+
+    /// A 1st partway through the 3-week view. The header already names the month the view starts in.
+    private func startsNewMonth(_ day: CalendarDay, in days: [CalendarDay]) -> Bool {
+        appState.preferences.calendarSpan == .threeWeeks
+            && day.id != days.first?.id
+            && appState.calendar.component(.day, from: day.date) == 1
     }
 
     private func headerText(_ text: String) -> some View {
@@ -57,6 +66,8 @@ private struct DayCell: View {
     @Environment(AppState.self) private var appState
     @Environment(\.textScale) private var scale
     let day: CalendarDay
+    /// Keeps the label's space in every cell of that row, so the numbers stay level.
+    var rowHasMonthLabel = false
     var startsNewMonth = false
 
     private var isToday: Bool { appState.calendar.isDate(day.date, inSameDayAs: appState.now) }
@@ -69,7 +80,7 @@ private struct DayCell: View {
             appState.selectedDate = day.date
         } label: {
             VStack(spacing: 2) {
-                if appState.preferences.calendarSpan == .threeWeeks {
+                if rowHasMonthLabel {
                     MonthLabel(date: day.date, isShown: startsNewMonth)
                 }
                 Text(day.date, format: .dateTime.day())
@@ -127,7 +138,7 @@ private struct DayCell: View {
 }
 
 /// The 3-week view can run across months, so a 1st partway through carries a small "Dec" above it.
-/// Every day keeps the space, so the rows stay level and the grid doesn't change height as you page.
+/// Every day in that row keeps the space, so the numbers stay level.
 private struct MonthLabel: View {
 
     @Environment(\.textScale) private var scale
@@ -137,8 +148,8 @@ private struct MonthLabel: View {
     private static let height: CGFloat = 11
 
     /// How far the label and its spacing push the day number down, for the week numbers to match.
-    static func inset(_ span: CalendarSpan, scale: CGFloat) -> CGFloat {
-        span == .threeWeeks ? height * scale + 2 : 0
+    static func inset(scale: CGFloat) -> CGFloat {
+        height * scale + 2
     }
 
     var body: some View {

@@ -39,6 +39,11 @@ struct DisplaySettingsTab: View {
                 SettingsSegmentedPicker(title: "Events view", selection: $preferences.eventsView) {
                     ForEach(EventsView.allCases) { Text($0.label).tag($0) }
                 }
+                if preferences.eventsView == .day {
+                    SettingsSegmentedPicker(title: "Days", selection: $preferences.dayViewDayCount) {
+                        ForEach(Preferences.dayViewDayOptions, id: \.self) { Text($0 == 1 ? "1 day" : "\($0) days").tag($0) }
+                    }
+                }
                 SettingsSegmentedPicker(title: "Text size", selection: $preferences.textSize) {
                     ForEach(TextSize.allCases) { Text($0.label).tag($0) }
                 }

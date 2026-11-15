@@ -8,6 +8,7 @@ final class Preferences {
 
     nonisolated static let agendaDayOptions = [1, 2, 3, 5, 7, 14, 30]
     nonisolated static let maxAgendaDayCount = 30
+    nonisolated static let dayViewDayOptions = [1, 3]
 
     private enum Key {
         static let keepCalendarOnTop = "keepCalendarOnTop"
@@ -18,7 +19,6 @@ final class Preferences {
         static let meetingAlertLeadMinutes = "meetingAlertLeadMinutes"
         static let meetingAlertScope = "meetingAlertScope"
         static let meetingAlertSound = "meetingAlertSound"
-        static let meetingAlertShowsGranola = "meetingAlertShowsGranola"
         static let checkForUpdates = "checkForUpdates"
         static let shareUsageStats = "shareUsageStats"
         static let sendCrashReports = "sendCrashReports"
@@ -39,6 +39,7 @@ final class Preferences {
         static let calendarDensity = "calendarDensity"
         static let eventDensity = "eventDensity"
         static let agendaDayCount = "agendaDayCount"
+        static let dayViewDayCount = "dayViewDayCount"
         static let eventsView = "eventsView"
         static let hideEmptyDays = "hideEmptyDays"
         static let hideAllDayEvents = "hideAllDayEvents"
@@ -64,8 +65,6 @@ final class Preferences {
     var meetingAlertLeadMinutes: Int { didSet { defaults.set(meetingAlertLeadMinutes, forKey: Key.meetingAlertLeadMinutes) } }
     var meetingAlertScope: MeetingAlertScope { didSet { defaults.set(meetingAlertScope.rawValue, forKey: Key.meetingAlertScope) } }
     var meetingAlertSound: Bool { didSet { defaults.set(meetingAlertSound, forKey: Key.meetingAlertSound) } }
-    /// The Granola button on alerts, when Granola is installed.
-    var meetingAlertShowsGranola: Bool { didSet { defaults.set(meetingAlertShowsGranola, forKey: Key.meetingAlertShowsGranola) } }
     /// Look for a new version on GitHub once a day.
     var checkForUpdates: Bool { didSet { defaults.set(checkForUpdates, forKey: Key.checkForUpdates) } }
     /// Send anonymous usage stats once a day. Off unless you turn it on.
@@ -102,6 +101,8 @@ final class Preferences {
     var eventsView: EventsView { didSet { defaults.set(eventsView.rawValue, forKey: Key.eventsView) } }
     /// How many days ahead the agenda list looks.
     var agendaDayCount: Int { didSet { defaults.set(agendaDayCount, forKey: Key.agendaDayCount) } }
+    /// How many days the Day view shows side by side, starting with the selected one. One of `dayViewDayOptions`.
+    var dayViewDayCount: Int { didSet { defaults.set(dayViewDayCount, forKey: Key.dayViewDayCount) } }
     var hideEmptyDays: Bool { didSet { defaults.set(hideEmptyDays, forKey: Key.hideEmptyDays) } }
     var hideAllDayEvents: Bool { didSet { defaults.set(hideAllDayEvents, forKey: Key.hideAllDayEvents) } }
     var hidePastEvents: Bool { didSet { defaults.set(hidePastEvents, forKey: Key.hidePastEvents) } }
@@ -125,7 +126,6 @@ final class Preferences {
             Key.meetingAlerts: true,
             Key.meetingAlertLeadMinutes: 1,
             Key.meetingAlertSound: true,
-            Key.meetingAlertShowsGranola: true,
             Key.nextEventLeadMinutes: 30,
             Key.showYearProgress: true,
             Key.highlightToday: true,
@@ -143,7 +143,6 @@ final class Preferences {
         meetingAlertLeadMinutes = MeetingAlertSchedule.leadOptions.contains(lead) ? lead : 1
         meetingAlertScope = Self.value(defaults, Key.meetingAlertScope, default: .videoMeetings)
         meetingAlertSound = defaults.bool(forKey: Key.meetingAlertSound)
-        meetingAlertShowsGranola = defaults.bool(forKey: Key.meetingAlertShowsGranola)
         checkForUpdates = defaults.bool(forKey: Key.checkForUpdates)
         shareUsageStats = defaults.bool(forKey: Key.shareUsageStats)
         sendCrashReports = defaults.bool(forKey: Key.sendCrashReports)
@@ -169,6 +168,8 @@ final class Preferences {
         eventDensity = Self.value(defaults, Key.eventDensity, default: .compact)
         eventsView = Self.value(defaults, Key.eventsView, default: .day)
         agendaDayCount = min(max(defaults.integer(forKey: Key.agendaDayCount), 1), Self.maxAgendaDayCount)
+        let dayCount = defaults.integer(forKey: Key.dayViewDayCount)
+        dayViewDayCount = Self.dayViewDayOptions.contains(dayCount) ? dayCount : 1
         hideEmptyDays = defaults.bool(forKey: Key.hideEmptyDays)
         hideAllDayEvents = defaults.bool(forKey: Key.hideAllDayEvents)
         hidePastEvents = defaults.bool(forKey: Key.hidePastEvents)

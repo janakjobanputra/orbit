@@ -2,8 +2,7 @@ import AppKit
 import Observation
 import SwiftUI
 
-/// The floating alert shown shortly before a meeting: one card per meeting coming up, with Join and,
-/// when it's installed, Granola for notes.
+/// The floating alert shown shortly before a meeting: one card per meeting coming up, with Join.
 struct MeetingAlertView: View {
 
     @Environment(AppState.self) private var appState
@@ -11,7 +10,7 @@ struct MeetingAlertView: View {
     var body: some View {
         VStack(spacing: 8) {
             ForEach(appState.meetingAlerts, id: \.self) { event in
-                MeetingAlertCard(event: event, usesGranola: appState.alertsOpenGranola)
+                MeetingAlertCard(event: event)
             }
         }
         .padding(10)
@@ -25,7 +24,6 @@ private struct MeetingAlertCard: View {
 
     @Environment(AppState.self) private var appState
     let event: CalendarEvent
-    let usesGranola: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -61,17 +59,7 @@ private struct MeetingAlertCard: View {
                 .accessibilityLabel("Dismiss")
             }
             if let url = event.meetingURL {
-                JoinSplitButton(event: event, url: url, usesGranola: usesGranola)
-            } else if usesGranola && !event.guests.isEmpty {
-                // A meeting with people but no call link: notes, in person.
-                Button {
-                    appState.openGranola()
-                    appState.dismissAlert(event)
-                } label: {
-                    Label("Open Granola", systemImage: "note.text")
-                        .frame(maxWidth: .infinity)
-                }
-                .controlSize(.large)
+                JoinButton(event: event, url: url)
             } else {
                 Button("Dismiss") { appState.dismissAlert(event) }
                     .frame(maxWidth: .infinity)
@@ -88,85 +76,40 @@ private struct MeetingAlertCard: View {
     }
 }
 
-/// Join, with Granola opening alongside when you use it, and a ⌄ for joining without it.
-private struct JoinSplitButton: View {
+/// Join, with the icon of the app the call opens in, such as Zoom.
+private struct JoinButton: View {
 
     @Environment(AppState.self) private var appState
     let event: CalendarEvent
     let url: URL
-    let usesGranola: Bool
-    /// The app the call opens in, such as Zoom; nil when it's the browser.
+    /// Nil when the call opens in the browser.
     @State private var appIcon: NSImage?
 
     var body: some View {
-        HStack(spacing: 0) {
-            Button {
-                appState.join(fromAlert: event)
-            } label: {
-                HStack(spacing: 10) {
-                    icon
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("Join Meeting")
-                            .font(.system(size: 13, weight: .semibold))
-                        if usesGranola {
-                            Text("& open Granola")
-                                .font(.system(size: 11))
-                                .opacity(0.8)
-                        }
-                    }
-                    Spacer(minLength: 0)
+        Button {
+            appState.join(fromAlert: event)
+        } label: {
+            HStack(spacing: 8) {
+                if let appIcon {
+                    Image(nsImage: appIcon)
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                } else {
+                    Image(systemName: "video.fill")
+                        .font(.system(size: 13))
                 }
-                .padding(.leading, 12)
-                .frame(maxHeight: .infinity)
-                .contentShape(Rectangle())
+                Text("Join Meeting")
+                    .font(.system(size: 13, weight: .semibold))
             }
-            .buttonStyle(.plain)
-            .help(usesGranola ? "Join the call and open Granola for notes" : "Join the call")
-
-            if usesGranola {
-                Rectangle()
-                    .fill(.white.opacity(0.35))
-                    .frame(width: 1)
-                    .padding(.vertical, 8)
-                Menu {
-                    Button("Join Meeting Only", systemImage: "video") { appState.join(fromAlert: event, withGranola: false) }
-                    Button("Open Granola Only", systemImage: "note.text") {
-                        appState.openGranola()
-                        appState.dismissAlert(event)
-                    }
-                    Divider()
-                    Button("Dismiss") { appState.dismissAlert(event) }
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .frame(width: 40)
-                        .frame(maxHeight: .infinity)
-                        .contentShape(Rectangle())
-                }
-                .menuStyle(.button)
-                .buttonStyle(.plain)
-                .menuIndicator(.hidden)
-                .fixedSize(horizontal: true, vertical: false)
-                .accessibilityLabel("More ways to join")
-            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 36)
+            .background(Color.orbitTeal, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .contentShape(Rectangle())
         }
-        .foregroundStyle(.white)
-        .frame(height: usesGranola ? 44 : 36)
-        .background(Color.orbitTeal, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .buttonStyle(.plain)
+        .help("Join the call")
         .task(id: url) { appIcon = MeetingOpener.icon(for: url) }
-    }
-
-    @ViewBuilder
-    private var icon: some View {
-        if let appIcon {
-            Image(nsImage: appIcon)
-                .resizable()
-                .frame(width: 24, height: 24)
-        } else {
-            Image(systemName: "video.fill")
-                .font(.system(size: 14))
-                .frame(width: 24, height: 24)
-        }
     }
 }
 

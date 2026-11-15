@@ -73,7 +73,6 @@ Run everything with `make test`. To look at the rendered popovers, run the tests
 | When | When it starts, 1, 2, 5, 10 minutes before | Behaviour (`testLeadTimeAndTurningAlertsOff`) | pass |
 | Alert for | Video meetings, All events | Behaviour (`testOnlyVideoMeetingsUnlessYouAskForAll`) | pass |
 | Play a sound | on, off | Not automated: the sound plays from the alert window | by hand |
-| Show the Granola button | on, off | Render (`testMeetingAlert`); Granola itself not installed on the test Mac | partly |
 | Show a sample alert | button | Behaviour (`testTheSampleAlertOpensNothing`), by hand | pass |
 
 ## Calendars

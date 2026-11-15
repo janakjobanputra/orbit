@@ -42,13 +42,13 @@ final class SettingsFileTests: XCTestCase {
         p.meetingAlertLeadMinutes = 5
         p.meetingAlertScope = .allEvents
         p.meetingAlertSound = false
-        p.meetingAlertShowsGranola = false
         p.calendarSpan = .threeWeeks
         p.textSize = TextSize.allCases.last!
         p.calendarDensity = .airy
         p.eventDensity = .cozy
         p.eventsView = .agenda
         p.agendaDayCount = 7
+        p.dayViewDayCount = 3
         p.hideEmptyDays = false
         p.hideAllDayEvents = true
         p.hidePastEvents = true

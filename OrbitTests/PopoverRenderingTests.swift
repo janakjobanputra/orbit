@@ -151,19 +151,39 @@ final class PopoverRenderingTests: XCTestCase {
         }
         XCTAssertEqual(state.meetingAlerts.count, 2)
         var images: [Data] = []
-        for (granola, scheme) in [(true, ColorScheme.light), (false, .light), (true, .dark)] {
-            state.isGranolaInstalled = granola
+        for scheme in [ColorScheme.light, .dark] {
             let root = MeetingAlertView()
                 .environment(state)
                 .environment(\.colorScheme, scheme)
                 .environment(\.timeZone, TestSupport.utc)
                 .background(scheme == .dark ? Color.black : Color.white)
             let rep = snapshot(NSHostingView(rootView: root))
-            attach(rep, "Meeting alert, Granola \(granola ? "installed" : "not installed"), \(scheme)")
+            attach(rep, "Meeting alert, \(scheme)")
             XCTAssertEqual(rep.size.width, MeetingAlertView.width, accuracy: 0.5)
             images.append(png(rep))
         }
-        XCTAssertEqual(Set(images).count, 3)
+        XCTAssertEqual(Set(images).count, 2)
+    }
+
+    func testThreeDayView() async {
+        await assertEachOptionDiffers("Days", Preferences.dayViewDayOptions) {
+            $0.preferences.eventsView = .day
+            $0.preferences.dayViewDayCount = $1
+        }
+    }
+
+    /// Only the row where a new month starts is taller; otherwise rows are spaced like the month view's.
+    func testThreeWeeksOnlyMakeRoomForAMonthLabelWhereOneShows() async {
+        let state = await makeState()
+        state.preferences.calendarSpan = .threeWeeks
+        // Saturday 31 October: 18 October to 7 November, with November starting partway through.
+        let crossing = render(state)
+        state.displayedMonth = TestSupport.date(2026, 11, 11)
+        // 1 to 21 November: all one month, which the header names.
+        let within = render(state)
+        attach(crossing, "3 weeks crossing into November")
+        attach(within, "3 weeks within November")
+        XCTAssertEqual(crossing.size.height - within.size.height, 11 + 2, accuracy: 0.5)
     }
 
     func testCalendarShows() async {

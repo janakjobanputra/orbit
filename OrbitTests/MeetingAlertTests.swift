@@ -156,40 +156,10 @@ final class MeetingAlertTests: XCTestCase {
         XCTAssertEqual(state.meetingAlerts.map(\.title), ["A call", "B call"])
     }
 
-    func testJoinOpensGranolaUnlessYouJoinOnly() async {
-        let (state, clock) = await make([call("Design review", at: 10, 0), call("Standup", at: 10, 0)])
-        var opened: [String] = []
-        state.isGranolaInstalled = true
-        state.openMeeting = { _ in opened.append("call") }
-        state.openGranola = { opened.append("granola") }
-        move(clock, state, to: 9, 59)
-        state.join(fromAlert: state.meetingAlerts[0])
-        XCTAssertEqual(opened, ["granola", "call"], "Granola first, so the call ends up in front")
-        opened = []
-        state.join(fromAlert: state.meetingAlerts[0], withGranola: false)
-        XCTAssertEqual(opened, ["call"])
-    }
-
-    func testJoinSkipsGranolaWhenItsOffOrMissing() async {
-        let (state, clock) = await make([call("Design review", at: 10, 0)]) { $0.meetingAlertShowsGranola = false }
-        var opened: [String] = []
-        state.isGranolaInstalled = true
-        state.openMeeting = { _ in opened.append("call") }
-        state.openGranola = { opened.append("granola") }
-        move(clock, state, to: 9, 59)
-        state.join(fromAlert: state.meetingAlerts[0])
-        XCTAssertEqual(opened, ["call"])
-        state.preferences.meetingAlertShowsGranola = true
-        state.isGranolaInstalled = false
-        XCTAssertFalse(state.alertsOpenGranola)
-    }
-
     func testTheSampleAlertOpensNothing() async {
         let (state, _) = await make([])
         var opened: [URL] = []
         state.openMeeting = { opened.append($0) }
-        state.openGranola = { opened.append(URL(string: "granola:")!) }
-        state.isGranolaInstalled = false
         state.showSampleMeetingAlert()
         state.showSampleMeetingAlert()
         XCTAssertEqual(state.meetingAlerts.count, 1, "Showing it again replaces it")

@@ -515,10 +515,10 @@ final class SettingsPersistenceTests: XCTestCase {
         XCTAssertEqual(preferences.meetingAlertLeadMinutes, 1)
         XCTAssertEqual(preferences.meetingAlertScope, .videoMeetings)
         XCTAssertTrue(preferences.meetingAlertSound)
-        XCTAssertTrue(preferences.meetingAlertShowsGranola)
         XCTAssertEqual(preferences.eventDots, .colors)
         XCTAssertEqual(preferences.textSize, .standard)
         XCTAssertEqual(preferences.agendaDayCount, 14)
+        XCTAssertEqual(preferences.dayViewDayCount, 1)
         XCTAssertTrue(preferences.hideEmptyDays)
         XCTAssertEqual(preferences.mapsProvider, .apple)
         XCTAssertNil(preferences.defaultCalendarID)
@@ -528,7 +528,7 @@ final class SettingsPersistenceTests: XCTestCase {
         let keyPaths: [ReferenceWritableKeyPath<Preferences, Bool>] = [
             \.keepCalendarOnTop, \.globalShortcutsEnabled, \.showDaySummary, \.showFreeTime, \.showYearProgress,
             \.showDayProgress, \.showWeekNumbers, \.highlightToday, \.dimWeekends, \.showMonthGrid,
-            \.hideEmptyDays, \.hideAllDayEvents, \.hidePastEvents, \.meetingAlerts, \.meetingAlertSound, \.meetingAlertShowsGranola,
+            \.hideEmptyDays, \.hideAllDayEvents, \.hidePastEvents, \.meetingAlerts, \.meetingAlertSound,
         ]
         for keyPath in keyPaths {
             for value in [true, false] {
@@ -552,6 +552,7 @@ final class SettingsPersistenceTests: XCTestCase {
         }
         for value in MapsProvider.allCases { reloaded().mapsProvider = value; XCTAssertEqual(reloaded().mapsProvider, value) }
         for value in Preferences.agendaDayOptions { reloaded().agendaDayCount = value; XCTAssertEqual(reloaded().agendaDayCount, value) }
+        for value in Preferences.dayViewDayOptions { reloaded().dayViewDayCount = value; XCTAssertEqual(reloaded().dayViewDayCount, value) }
         for value in [5, 30, 120] { reloaded().nextEventLeadMinutes = value; XCTAssertEqual(reloaded().nextEventLeadMinutes, value) }
     }
 

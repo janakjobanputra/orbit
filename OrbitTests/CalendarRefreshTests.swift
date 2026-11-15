@@ -163,3 +163,40 @@ final class ThreeWeekViewTests: XCTestCase {
         XCTAssertTrue(state.calendar.isDate(state.selectedDate, inSameDayAs: TestSupport.date(2027, 2, 10)))
     }
 }
+
+/// The Day view with three days side by side.
+@MainActor
+final class ThreeDayViewTests: XCTestCase {
+
+    func testShowsTheSelectedDayAndTheNextTwo() async {
+        let friday = TestSupport.event("Friday dinner", start: TestSupport.date(2026, 11, 2, 19), minutes: 90)
+        let later = TestSupport.event("Too far", start: TestSupport.date(2026, 11, 3, 9), minutes: 30)
+        let (state, _, _) = await StateFixture.make { store, preferences in
+            store.add(friday)
+            store.add(later)
+            preferences.eventsView = .day
+            preferences.dayViewDayCount = 3
+        }
+        // StateFixture's day is Saturday 31 October.
+        XCTAssertEqual(state.dayColumns.map(\.date), [
+            TestSupport.date(2026, 10, 31), TestSupport.date(2026, 11, 1), TestSupport.date(2026, 11, 2),
+        ])
+        XCTAssertEqual(state.dayColumns[2].timeline.blocks.map(\.event.title), ["Friday dinner"])
+        XCTAssertFalse(state.dayColumns.flatMap(\.timeline.blocks).contains { $0.event.title == "Too far" })
+    }
+
+    func testOneDayIsTheDefault() async {
+        let (state, _, _) = await StateFixture.make()
+        XCTAssertEqual(state.dayColumns.count, 1)
+    }
+
+    func testAnEventOverMidnightShowsInBothColumns() async {
+        let late = TestSupport.event("Late call", start: TestSupport.date(2026, 10, 31, 23, 30), minutes: 60)
+        let (state, _, _) = await StateFixture.make { store, preferences in
+            store.add(late)
+            preferences.dayViewDayCount = 3
+        }
+        XCTAssertEqual(state.dayColumns[0].timeline.blocks.map(\.event.title), ["Late call"])
+        XCTAssertEqual(state.dayColumns[1].timeline.blocks.map(\.event.title), ["Late call"])
+    }
+}

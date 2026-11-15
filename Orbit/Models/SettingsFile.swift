@@ -40,7 +40,6 @@ struct SettingsFile: Codable, Equatable {
         var meetingAlertLeadMinutes: Int?
         var meetingAlertScope: String?
         var meetingAlertSound: Bool?
-        var meetingAlertShowsGranola: Bool?
         // Menu bar
         var menuBarFormat: MenuBarFormat?
         var nextEventLeadMinutes: Int?
@@ -62,6 +61,7 @@ struct SettingsFile: Codable, Equatable {
         var eventDensity: String?
         var eventsView: String?
         var agendaDayCount: Int?
+        var dayViewDayCount: Int?
         var hideEmptyDays: Bool?
         var hideAllDayEvents: Bool?
         var hidePastEvents: Bool?
@@ -137,7 +137,6 @@ extension Preferences {
             meetingAlertLeadMinutes: meetingAlertLeadMinutes,
             meetingAlertScope: meetingAlertScope.rawValue,
             meetingAlertSound: meetingAlertSound,
-            meetingAlertShowsGranola: meetingAlertShowsGranola,
             menuBarFormat: menuBarFormat,
             nextEventLeadMinutes: nextEventLeadMinutes,
             showDaySummary: showDaySummary,
@@ -156,6 +155,7 @@ extension Preferences {
             eventDensity: eventDensity.rawValue,
             eventsView: eventsView.rawValue,
             agendaDayCount: agendaDayCount,
+            dayViewDayCount: dayViewDayCount,
             hideEmptyDays: hideEmptyDays,
             hideAllDayEvents: hideAllDayEvents,
             hidePastEvents: hidePastEvents,
@@ -203,7 +203,6 @@ extension Preferences {
         }
         option(values.meetingAlertScope) { (value: MeetingAlertScope) in meetingAlertScope = value }
         set(values.meetingAlertSound) { meetingAlertSound = $0 }
-        set(values.meetingAlertShowsGranola) { meetingAlertShowsGranola = $0 }
 
         set(values.menuBarFormat) { menuBarFormat = $0 }
         set(values.nextEventLeadMinutes) { nextEventLeadMinutes = min(max($0, 5), 120) }
@@ -225,6 +224,9 @@ extension Preferences {
         option(values.eventDensity) { (value: Density) in eventDensity = value }
         option(values.eventsView) { (value: EventsView) in eventsView = value }
         // The nearest length the Agenda days menu offers, so the menu always has something selected.
+        set(values.dayViewDayCount) { count in
+            dayViewDayCount = Preferences.dayViewDayOptions.min { abs($0 - count) < abs($1 - count) } ?? dayViewDayCount
+        }
         set(values.agendaDayCount) { count in
             agendaDayCount = Preferences.agendaDayOptions.min { abs($0 - count) < abs($1 - count) } ?? agendaDayCount
         }
